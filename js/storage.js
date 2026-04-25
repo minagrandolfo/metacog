@@ -55,22 +55,26 @@ function clearPartialSession(sessionId) {
 
 function listPartialSessions() {
   const partials = [];
+  const stale = [];
   try {
     for (let i = 0; i < localStorage.length; i++) {
       const k = localStorage.key(i);
       if (k && k.startsWith('metacog_partial_')) {
         const data = JSON.parse(localStorage.getItem(k));
-        if (data && data.trials && data.trials.length > 0) {
+        if (data && data.trials && data.trials.length > 0 && data.staircase_state && typeof data.staircase_state.level === 'number') {
           partials.push({
             key: k,
             sessionId: k.replace('metacog_partial_', ''),
             ...data
           });
+        } else {
+          stale.push(k);
         }
       }
     }
+    stale.forEach(k => { try { localStorage.removeItem(k); } catch (e) {} });
   } catch (e) {}
-  return partials.sort((a, b) => b.last_update - a.last_update);
+  return partials.sort((a, b) => (b.last_update || 0) - (a.last_update || 0));
 }
 
 function loadPartialSession(sessionId) {

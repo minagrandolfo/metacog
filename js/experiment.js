@@ -28,13 +28,14 @@ function runExperiment(mode, resumeData) {
   const resumedTrials = resumeData ? resumeData.trials : [];
   const remainingTrials = TOTAL_TRIALS - resumedTrials.length;
 
+  const validResume = resumeData && resumeData.staircase_state && typeof resumeData.staircase_state.level === 'number';
   const staircase = new StaircaseTwoDownOneUp({
-    startLevel: resumeData ? resumeData.staircase_state.level : 30,
+    startLevel: validResume ? resumeData.staircase_state.level : 30,
     minLevel: 1,
     maxLevel: 100,
     stepSizes: [10, 5, 2, 1]
   });
-  if (resumeData && resumeData.staircase_state) {
+  if (validResume) {
     staircase.consecutiveCorrect = resumeData.staircase_state.consecutiveCorrect || 0;
     staircase.lastDirection = resumeData.staircase_state.lastDirection || null;
     staircase.reversalCount = resumeData.staircase_state.reversalCount || 0;

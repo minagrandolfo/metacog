@@ -197,6 +197,25 @@
       min-width: 100px;
       border-radius: 8px;
     }
+
+    #jspsych-html-button-response-btngroup,
+    #jspsych-canvas-button-response-btngroup {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 4px;
+      max-width: 100%;
+    }
+
+    @media (max-width: 600px) {
+      .jspsych-btn {
+        padding: 10px 10px;
+        font-size: 13px;
+        min-width: 0;
+        margin: 3px;
+      }
+      .jspsych-content { padding: 0 8px; max-width: 100%; }
+    }
   </style>
 </head>
 <body>

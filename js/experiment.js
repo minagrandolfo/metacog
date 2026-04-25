@@ -214,6 +214,7 @@ function runExperiment(mode, resumeData) {
       const accuracy = total > 0 ? correct / total : 0;
       const bins = computeCalibration(allPaired);
       const brier = brierScore(allPaired);
+      const auc = aurocType2WithCI(allPaired, 300);
       const diagnostic = calibrationDiagnostic(bins);
       const curve = calibrationCurveSVG(bins);
 
@@ -227,6 +228,9 @@ function runExperiment(mode, resumeData) {
         n_trials: total,
         accuracy: accuracy,
         brier: brier,
+        auroc2: auc.point,
+        auroc2_ci_lo: auc.ci_lo,
+        auroc2_ci_hi: auc.ci_hi,
         staircase_final: staircase.level,
         global_pre: predPre,
         global_post: predPost
@@ -260,9 +264,12 @@ function runExperiment(mode, resumeData) {
       return `
         <h2 style="color:white">${t('resultsTitle')}</h2>
         <div style="display:flex;gap:24px;justify-content:center;align-items:flex-start;flex-wrap:wrap">
-          <div style="background:white;color:#222;padding:18px;border-radius:8px;min-width:240px;max-width:320px;text-align:left">
+          <div style="background:white;color:#222;padding:18px;border-radius:8px;min-width:240px;max-width:340px;text-align:left">
             <p style="margin:4px 0"><b>${t('accuracy')}</b> ${(accuracy*100).toFixed(0)}% (${correct}/${total})</p>
             <p style="margin:0 0 14px 0;font-size:12px;color:#666;line-height:1.4">${t('accuracyExplain')}</p>
+
+            <p style="margin:4px 0"><b>${t('auroc2')}</b> ${auc.point !== null ? auc.point.toFixed(3) : 'n/a'}${auc.ci_lo !== null ? ` <span style="font-size:13px;color:#555">(95% CI: ${auc.ci_lo.toFixed(3)}-${auc.ci_hi.toFixed(3)})</span>` : ''}</p>
+            <p style="margin:0 0 14px 0;font-size:12px;color:#666;line-height:1.4">${t('auroc2Explain')}</p>
 
             <p style="margin:4px 0"><b>${t('brier')}</b> ${brier !== null ? brier.toFixed(3) : 'n/a'}</p>
             <p style="margin:0 0 14px 0;font-size:12px;color:#666;line-height:1.4">${t('brierExplain')}</p>
@@ -288,6 +295,6 @@ function runExperiment(mode, resumeData) {
   if (!resumeData) timeline.push(globalPre);
   timeline.push(trialBlock);
   if (!resumeData) timeline.push(globalPost);
-  timeline.push(finalQuestions, results);
+  timeline.push(results);
   jsPsych.run(timeline);
 }

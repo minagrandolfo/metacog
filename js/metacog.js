@@ -45,6 +45,42 @@ function brierScore(trials) {
   return sum / trials.length;
 }
 
+function aurocType2(trials) {
+  const correct = trials.filter(tr => tr.correct);
+  const incorrect = trials.filter(tr => !tr.correct);
+  if (correct.length === 0 || incorrect.length === 0) return null;
+  let sum = 0;
+  for (const c of correct) {
+    for (const i of incorrect) {
+      if (c.confidence > i.confidence) sum += 1;
+      else if (c.confidence === i.confidence) sum += 0.5;
+    }
+  }
+  return sum / (correct.length * incorrect.length);
+}
+
+function aurocType2WithCI(trials, nBoot) {
+  nBoot = nBoot ?? 200;
+  const point = aurocType2(trials);
+  if (point === null || trials.length < 10) return { point, ci_lo: null, ci_hi: null };
+  const aucs = [];
+  for (let b = 0; b < nBoot; b++) {
+    const resampled = [];
+    for (let i = 0; i < trials.length; i++) {
+      resampled.push(trials[Math.floor(Math.random() * trials.length)]);
+    }
+    const auc = aurocType2(resampled);
+    if (auc !== null) aucs.push(auc);
+  }
+  if (aucs.length < 10) return { point, ci_lo: null, ci_hi: null };
+  aucs.sort((a, b) => a - b);
+  return {
+    point: point,
+    ci_lo: aucs[Math.floor(0.025 * aucs.length)],
+    ci_hi: aucs[Math.floor(0.975 * aucs.length)]
+  };
+}
+
 function calibrationDiagnostic(bins) {
   const messages = [];
   bins.forEach(bin => {

@@ -1,0 +1,183 @@
+const I18N = {
+  fr: {
+    title: 'Metacog Trainer',
+    intro: 'Un outil pour mesurer et entraîner ta <b>métacognition</b> : ta capacité à savoir quand tu sais et quand tu doutes. Tâche : juger la direction du mouvement de petits points (gauche ou droite) et indiquer ta confiance.',
+    chooseMode: '1. Choisis un mode :',
+    btnEvaluate: 'Évaluer',
+    btnEvaluateDesc: '~10 min, sans feedback',
+    btnTrain: 'S\'entraîner',
+    btnTrainDesc: '~5 min, avec feedback',
+    recommendNote: 'On recommande d\'<b>évaluer une fois</b> pour avoir un baseline, puis de <b>t\'entraîner</b>, puis de <b>ré-évaluer</b> pour voir si ton score a bougé.',
+    checklistTitle: '2. Avant de commencer, vérifie :',
+    check1: 'J\'ai au moins <b>15 minutes au calme</b> sans interruption (notifications coupées)',
+    check2: 'Mes <b>lunettes/lentilles</b> sont portées si j\'en ai besoin',
+    check3: 'Ma <b>luminosité d\'écran</b> est confortable (ni trop sombre ni trop fort)',
+    check4: 'J\'ai compris : je réponds <b>"Gauche"</b> ou <b>"Droite"</b> selon la direction majoritaire des points',
+    qualityNote: 'Évite si tu es très fatigué·e ou distrait·e, ça affecte la sensibilité métacog mesurée.',
+    btnStartReady: 'Commencer',
+    btnStartNothingDone: 'Choisis un mode et coche les cases',
+    btnStartNoMode: 'Choisis un mode (1)',
+    btnStartNoBoxes: 'Coche toutes les cases (2)',
+    disclaimer: 'Outil expérimental, pas un diagnostic médical. Données anonymisées utilisées à des fins de recherche.',
+    lastSession: 'Dernière session :',
+    modeEvalLabel: 'évaluation',
+    modeTrainLabel: 'entraînement',
+    accuracyShort: 'accuracy',
+    partialTitle: 'Sessions inachevées',
+    partialItem: '{mode}, {count}/{total} trials, {date}',
+    btnResume: 'Reprendre',
+    btnDelete: 'Effacer',
+    justNow: 'à l\'instant',
+    minutesAgo: 'il y a {n} min',
+    hoursAgo: 'il y a {n} h',
+    daysAgo: 'il y a {n} jour{s}',
+    titleEvaluate: 'Évaluation',
+    titleTrain: 'Entraînement',
+    introEvaluate: '{n} essais. Pas de feedback pendant la tâche.',
+    introTrain: '{n} essais. Tu verras ta calibration à la fin.',
+    introResume: 'Reprise : il te reste {n} essais.',
+    welcomeInstructions: 'Tu vois des <b>points en mouvement</b>. La majorité bouge dans une direction (gauche ou droite), les autres bougent au hasard. Réponds selon la direction majoritaire.',
+    welcomeKeys: 'Clavier : <b>← →</b> pour gauche/droite, <b>1-2-3-4</b> pour la confiance. Sur tel : touche les boutons.',
+    welcomeConfidence: 'Après chaque réponse, indique ta <b>confiance</b> (4 niveaux).',
+    welcomeAdaptive: 'La difficulté s\'adapte automatiquement : ça commence facile, ça devient subtil. Ça peut sembler impossible à certains moments, c\'est normal. Réponds quand même, même si tu devines.',
+    btnStart: 'Commencer',
+    btnLeft: 'Gauche (←)',
+    btnRight: 'Droite (→)',
+    confidencePrompt: 'Confiance ? (1-4 au clavier)',
+    conf1: '1 - Je devine',
+    conf2: '2 - Peu sûr',
+    conf3: '3 - Assez sûr',
+    conf4: '4 - Très sûr',
+    questionsTitle: 'Quelques questions rapides',
+    questionsAnonymous: 'Tout est anonyme.',
+    qSleep: 'Combien d\'heures as-tu dormi cette nuit ?',
+    qSleepUnit: 'heures',
+    qLD: 'À quelle fréquence fais-tu des rêves lucides (où tu sais que tu rêves) ?',
+    ldNever: 'Jamais',
+    ldRare: 'Moins d\'une fois par mois',
+    ldMonthly: 'Environ 1x par mois',
+    ldWeekly: 'Environ 1x par semaine',
+    ldMulti: 'Plusieurs fois par semaine',
+    qAge: 'Âge (optionnel) :',
+    btnSubmitQuestions: 'Voir mes résultats',
+    resultsTitle: 'Tes résultats',
+    accuracy: 'Accuracy :',
+    brier: 'Brier score :',
+    brierExplain: 'Plus bas = mieux calibré (0 = parfait)',
+    difficultyFinal: 'Cohérence finale :',
+    coherenceUnit: '% cohérents',
+    diagnosticTitle: 'Diagnostic :',
+    calibAligned: 'Ta calibration est plutôt bien alignée sur tous les niveaux.',
+    overconfidentMsg: 'Quand tu réponds <b>"{label}"</b>, tu as raison {acc}% du temps (attendu ~{exp}%) → tu es <b>surconfiant</b> à ce niveau.',
+    underconfidentMsg: 'Quand tu réponds <b>"{label}"</b>, tu as raison {acc}% du temps (attendu ~{exp}%) → tu es <b>sous-confiant</b> à ce niveau.',
+    finalDisclaimer: 'Outil expérimental, à but pédagogique.',
+    btnFinish: 'Terminer',
+    svgXLabel: 'Niveau de confiance',
+    svgYLabel: 'Accuracy réelle'
+  },
+  en: {
+    title: 'Metacog Trainer',
+    intro: 'A tool to measure and train your <b>metacognition</b>: your ability to know when you know and when you doubt. Task: judge the direction of motion of small dots (left or right) and report your confidence.',
+    chooseMode: '1. Choose a mode:',
+    btnEvaluate: 'Evaluate',
+    btnEvaluateDesc: '~10 min, no feedback',
+    btnTrain: 'Train',
+    btnTrainDesc: '~5 min, with feedback',
+    recommendNote: 'We recommend you <b>evaluate once</b> for a baseline, then <b>train</b>, then <b>re-evaluate</b> to see if your score moved.',
+    checklistTitle: '2. Before starting, check:',
+    check1: 'I have at least <b>15 quiet minutes</b> without interruption (notifications muted)',
+    check2: 'My <b>glasses/lenses</b> are on if I need them',
+    check3: 'My <b>screen brightness</b> is comfortable (not too dim, not too bright)',
+    check4: 'I understand: I answer <b>"Left"</b> or <b>"Right"</b> for the majority direction of the dots',
+    qualityNote: 'Avoid if you\'re very tired or distracted, it affects measured metacog sensitivity.',
+    btnStartReady: 'Start',
+    btnStartNothingDone: 'Pick a mode and check the boxes',
+    btnStartNoMode: 'Pick a mode (1)',
+    btnStartNoBoxes: 'Check all the boxes (2)',
+    disclaimer: 'Experimental tool, not a medical diagnostic. Anonymized data used for research.',
+    lastSession: 'Last session:',
+    modeEvalLabel: 'evaluation',
+    modeTrainLabel: 'training',
+    accuracyShort: 'accuracy',
+    partialTitle: 'Unfinished sessions',
+    partialItem: '{mode}, {count}/{total} trials, {date}',
+    btnResume: 'Resume',
+    btnDelete: 'Delete',
+    justNow: 'just now',
+    minutesAgo: '{n} min ago',
+    hoursAgo: '{n} h ago',
+    daysAgo: '{n} day{s} ago',
+    titleEvaluate: 'Evaluation',
+    titleTrain: 'Training',
+    introEvaluate: '{n} trials. No feedback during the task.',
+    introTrain: '{n} trials. You\'ll see your calibration at the end.',
+    introResume: 'Resuming: {n} trials remaining.',
+    welcomeInstructions: 'You see <b>moving dots</b>. The majority move in one direction (left or right), the rest move randomly. Respond with the majority direction.',
+    welcomeKeys: 'Keyboard: <b>← →</b> for left/right, <b>1-2-3-4</b> for confidence. On phone: tap the buttons.',
+    welcomeConfidence: 'After each response, rate your <b>confidence</b> (4 levels).',
+    welcomeAdaptive: 'Difficulty adapts to you: it starts easy and quickly becomes subtle. It may feel impossible at times, that\'s normal. Respond anyway, even guessing.',
+    btnStart: 'Start',
+    btnLeft: 'Left (←)',
+    btnRight: 'Right (→)',
+    confidencePrompt: 'Confidence? (1-4 on keyboard)',
+    conf1: '1 - Guessing',
+    conf2: '2 - Low',
+    conf3: '3 - High',
+    conf4: '4 - Very sure',
+    questionsTitle: 'A few quick questions',
+    questionsAnonymous: 'All anonymous.',
+    qSleep: 'How many hours did you sleep last night?',
+    qSleepUnit: 'hours',
+    qLD: 'How often do you have lucid dreams (where you know you\'re dreaming)?',
+    ldNever: 'Never',
+    ldRare: 'Less than once a month',
+    ldMonthly: 'About 1x per month',
+    ldWeekly: 'About 1x per week',
+    ldMulti: 'Several times per week',
+    qAge: 'Age (optional):',
+    btnSubmitQuestions: 'See my results',
+    resultsTitle: 'Your results',
+    accuracy: 'Accuracy:',
+    brier: 'Brier score:',
+    brierExplain: 'Lower = better calibrated (0 = perfect)',
+    difficultyFinal: 'Final coherence:',
+    coherenceUnit: '% coherent',
+    diagnosticTitle: 'Diagnostic:',
+    calibAligned: 'Your calibration is well aligned across all levels.',
+    overconfidentMsg: 'When you answer <b>"{label}"</b>, you\'re right {acc}% of the time (expected ~{exp}%) → you\'re <b>overconfident</b> at this level.',
+    underconfidentMsg: 'When you answer <b>"{label}"</b>, you\'re right {acc}% of the time (expected ~{exp}%) → you\'re <b>underconfident</b> at this level.',
+    finalDisclaimer: 'Experimental tool, for educational purposes.',
+    btnFinish: 'Finish',
+    svgXLabel: 'Reported confidence',
+    svgYLabel: 'Actual accuracy'
+  }
+};
+
+let currentLang = (function() {
+  try {
+    const stored = localStorage.getItem('metacog_lang');
+    if (stored === 'fr' || stored === 'en') return stored;
+  } catch (e) {}
+  return navigator.language && navigator.language.toLowerCase().startsWith('fr') ? 'fr' : 'en';
+})();
+
+function t(key, vars) {
+  let str = (I18N[currentLang] && I18N[currentLang][key]);
+  if (str == null) str = I18N.fr[key];
+  if (str == null) return key;
+  if (vars) {
+    Object.keys(vars).forEach(k => {
+      str = str.replace(new RegExp('\\{' + k + '\\}', 'g'), vars[k]);
+    });
+  }
+  return str;
+}
+
+function setLang(lang) {
+  if (lang !== 'fr' && lang !== 'en') return;
+  currentLang = lang;
+  try { localStorage.setItem('metacog_lang', lang); } catch (e) {}
+  if (typeof renderLanding === 'function') renderLanding();
+}
+
+function getLang() { return currentLang; }

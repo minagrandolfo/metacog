@@ -9,7 +9,7 @@
 const SHEET_ID = 'PASTE_YOUR_SHEET_ID_HERE';
 
 // HEADERS (à mettre en ligne 1 du Sheet) :
-// timestamp | session_id | mode | trial_n | orientation | staircase_level | response | correct | rt | confidence | conf_rt | sleep_hours | ld_freq | age
+// timestamp | session_id | mode | trial_n | direction | coherence | staircase_level | response | correct | rt | confidence | conf_rt | global_pre | global_post | sleep_hours | ld_freq | age | sex
 
 function doPost(e) {
   try {
@@ -22,8 +22,14 @@ function doPost(e) {
     const sleep = q && q.response ? q.response.sleep_hours : '';
     const ld = q && q.response ? q.response.ld_freq : '';
     const age = q && q.response ? q.response.age : '';
+    const sex = q && q.response ? q.response.sex : '';
 
-    const stims = payload.data.filter(t => t.task === 'gabor_2afc');
+    const pre = payload.data.find(t => t.task === 'global_pre');
+    const post = payload.data.find(t => t.task === 'global_post');
+    const globalPre = pre && pre.response ? pre.response.prediction : '';
+    const globalPost = post && post.response ? post.response.prediction : '';
+
+    const stims = payload.data.filter(t => t.task === 'stim');
     const confs = payload.data.filter(t => t.task === 'confidence');
 
     for (let i = 0; i < stims.length; i++) {
@@ -34,16 +40,20 @@ function doPost(e) {
         sessionId,
         s.mode,
         i + 1,
-        s.orientation,
+        s.direction,
+        s.coherence,
         s.staircase_level,
         s.response,
         s.correct,
         s.rt,
         c.confidence,
         c.rt,
+        globalPre,
+        globalPost,
         sleep,
         ld,
-        age
+        age,
+        sex
       ]);
     }
 

@@ -206,11 +206,15 @@ function runExperiment(mode, resumeData) {
       return `
         <h2 style="color:white">${t('resultsTitle')}</h2>
         <div style="display:flex;gap:24px;justify-content:center;align-items:flex-start;flex-wrap:wrap">
-          <div style="background:white;color:#222;padding:18px;border-radius:8px;min-width:200px;text-align:left">
+          <div style="background:white;color:#222;padding:18px;border-radius:8px;min-width:240px;max-width:320px;text-align:left">
             <p style="margin:4px 0"><b>${t('accuracy')}</b> ${(accuracy*100).toFixed(0)}% (${correct}/${total})</p>
+            <p style="margin:0 0 14px 0;font-size:12px;color:#666;line-height:1.4">${t('accuracyExplain')}</p>
+
             <p style="margin:4px 0"><b>${t('brier')}</b> ${brier !== null ? brier.toFixed(3) : 'n/a'}</p>
-            <p style="margin:4px 0;font-size:12px;color:#666">${t('brierExplain')}</p>
+            <p style="margin:0 0 14px 0;font-size:12px;color:#666;line-height:1.4">${t('brierExplain')}</p>
+
             <p style="margin:4px 0"><b>${t('difficultyFinal')}</b> ${staircase.level.toFixed(1)}${t('coherenceUnit')}</p>
+            <p style="margin:0;font-size:12px;color:#666;line-height:1.4">${t('coherenceExplain')}</p>
           </div>
           <div>${curve}</div>
         </div>

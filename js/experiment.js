@@ -152,6 +152,34 @@ function runExperiment(mode, resumeData) {
     repetitions: remainingTrials
   };
 
+  const globalSliderHTML = (qKey, sliderId) => `
+    <div style="background:white;color:#222;padding:24px;border-radius:8px;text-align:center;max-width:520px;margin:0 auto;">
+      <p style="font-size:17px;margin-bottom:24px">${t(qKey, {n: TOTAL_TRIALS})}</p>
+      <input type="range" name="prediction" min="0" max="${TOTAL_TRIALS}" value="${Math.floor(TOTAL_TRIALS/2)}"
+             oninput="document.getElementById('${sliderId}').textContent=this.value"
+             style="width:85%;height:10px;margin:14px 0">
+      <div style="font-size:32px;font-weight:bold;color:#2a8;margin-top:8px">
+        <span id="${sliderId}">${Math.floor(TOTAL_TRIALS/2)}</span> ${t('globalSliderSuffix', {n: TOTAL_TRIALS})}
+      </div>
+    </div>
+  `;
+
+  const globalPre = {
+    type: jsPsychSurveyHtmlForm,
+    preamble: `<h2 style="color:white">${t('globalPreTitle')}</h2><p style="color:white">${t('globalPreInstruction')}</p>`,
+    html: globalSliderHTML('globalPreQ', 'pre_val'),
+    button_label: t('btnConfirm'),
+    data: { task: 'global_pre', mode: mode }
+  };
+
+  const globalPost = {
+    type: jsPsychSurveyHtmlForm,
+    preamble: `<h2 style="color:white">${t('globalPostTitle')}</h2><p style="color:white">${t('globalPostInstruction')}</p>`,
+    html: globalSliderHTML('globalPostQ', 'post_val'),
+    button_label: t('btnConfirm'),
+    data: { task: 'global_post', mode: mode }
+  };
+
   const finalQuestions = {
     type: jsPsychSurveyHtmlForm,
     preamble: `<h2 style="color:white">${t('questionsTitle')}</h2><p style="color:white">${t('questionsAnonymous')}</p>`,
@@ -189,13 +217,39 @@ function runExperiment(mode, resumeData) {
       const diagnostic = calibrationDiagnostic(bins);
       const curve = calibrationCurveSVG(bins);
 
+      const preData = jsPsych.data.get().filter({task: 'global_pre'}).values()[0];
+      const postData = jsPsych.data.get().filter({task: 'global_post'}).values()[0];
+      const predPre = preData && preData.response ? parseInt(preData.response.prediction) : null;
+      const predPost = postData && postData.response ? parseInt(postData.response.prediction) : null;
+
       saveSession({
         mode: mode,
         n_trials: total,
         accuracy: accuracy,
         brier: brier,
-        staircase_final: staircase.level
+        staircase_final: staircase.level,
+        global_pre: predPre,
+        global_post: predPost
       });
+
+      let globalBlock = '';
+      if (predPre !== null && predPost !== null) {
+        const biasPost = predPost - correct;
+        const updating = Math.abs(predPost - predPre);
+        const biasMsg = biasPost > 1 ? t('globalBiasOver', {n: biasPost}) :
+                        biasPost < -1 ? t('globalBiasUnder', {n: -biasPost}) :
+                        t('globalBiasNone');
+        const updateMsg = updating > 1 ? t('globalUpdating', {n: updating}) : t('globalNoUpdating');
+        globalBlock = `
+          <div style="background:white;color:#222;padding:16px 20px;border-radius:8px;margin-top:14px;text-align:left;max-width:520px;margin-left:auto;margin-right:auto">
+            <b>${t('globalResultsTitle')}</b>
+            <p style="margin:6px 0;font-size:14px">${t('globalPredictedPre')} <b>${predPre} / ${total}</b></p>
+            <p style="margin:6px 0;font-size:14px">${t('globalPredictedPost')} <b>${predPost} / ${total}</b></p>
+            <p style="margin:6px 0;font-size:14px">${t('globalActual')} <b>${correct} / ${total}</b></p>
+            <p style="margin:10px 0 0 0;font-size:13px;color:#555;line-height:1.5">${biasMsg}<br>${updateMsg}</p>
+          </div>
+        `;
+      }
 
       const tipsBlock = mode === 'train'
         ? `<div style="background:#fff8dc;color:#333;padding:14px;border-radius:6px;margin-top:14px;text-align:left;max-width:520px;margin-left:auto;margin-right:auto">
@@ -218,6 +272,7 @@ function runExperiment(mode, resumeData) {
           </div>
           <div>${curve}</div>
         </div>
+        ${globalBlock}
         ${tipsBlock}
         <p style="font-size:12px;color:#ccc;margin-top:20px">${t('finalDisclaimer')}</p>
       `;
@@ -229,6 +284,10 @@ function runExperiment(mode, resumeData) {
     }
   };
 
-  const timeline = [welcome, trialBlock, finalQuestions, results];
+  const timeline = [welcome];
+  if (!resumeData) timeline.push(globalPre);
+  timeline.push(trialBlock);
+  if (!resumeData) timeline.push(globalPost);
+  timeline.push(finalQuestions, results);
   jsPsych.run(timeline);
 }

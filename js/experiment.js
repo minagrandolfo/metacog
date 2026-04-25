@@ -1,16 +1,18 @@
 function runExperiment(mode) {
   const jsPsych = initJsPsych({});
 
-  const N_TRIALS = mode === 'evaluate' ? 50 : 30;
+  const N_TRIALS = mode === 'evaluate' ? 60 : 30;
+  const sessionId = generateSessionId();
 
   const staircase = new StaircaseTwoDownOneUp({
-    startLevel: 15,
-    minLevel: 0.5,
-    maxLevel: 30,
-    stepSizes: [4, 2, 1]
+    startLevel: 6,
+    minLevel: 0.1,
+    maxLevel: 20,
+    stepSizes: [2.5, 1, 0.5, 0.25]
   });
 
   let currentTrial = {};
+  let lastStimData = null;
 
   const modeTitle = mode === 'evaluate' ? 'Évaluation' : 'Entraînement';
   const modeIntro = mode === 'evaluate'
@@ -24,6 +26,7 @@ function runExperiment(mode) {
       ${modeIntro}
       <p>Tu vois un Gabor (tache rayée floue). Touche <b>"Gauche"</b> s'il penche à gauche, <b>"Droite"</b> s'il penche à droite.</p>
       <p>Puis indique ta <b>confiance</b> (4 niveaux).</p>
+      <p style="font-size:14px;color:#ddd;margin-top:20px">La difficulté s'adapte automatiquement à toi : ça commence facile et ça devient rapidement plus subtil. Ça peut sembler impossible à certains moments, c'est normal. Réponds quand même, même si tu devines.</p>
     `,
     choices: ['Commencer']
   };
@@ -55,6 +58,7 @@ function runExperiment(mode) {
     on_finish: function(data) {
       data.correct = (data.response === data.correct_response);
       staircase.update(data.correct);
+      lastStimData = data;
     }
   };
 
@@ -65,6 +69,18 @@ function runExperiment(mode) {
     data: { task: 'confidence', mode: mode },
     on_finish: function(data) {
       data.confidence = data.response + 1;
+      if (lastStimData) {
+        savePartialTrial(sessionId, mode, {
+          orientation: lastStimData.orientation,
+          correct: lastStimData.correct,
+          response: lastStimData.response,
+          rt: lastStimData.rt,
+          confidence: data.confidence,
+          confidence_rt: data.rt,
+          staircase_level: lastStimData.staircase_level,
+          timestamp: Date.now()
+        });
+      }
     }
   };
 
@@ -141,6 +157,7 @@ function runExperiment(mode) {
     choices: ['Terminer'],
     on_finish: function() {
       sendToSheet(jsPsych.data.get().values());
+      clearPartialSession(sessionId);
     }
   };
 

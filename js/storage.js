@@ -24,6 +24,43 @@ function lastSession() {
   return h.length > 0 ? h[h.length - 1] : null;
 }
 
+function generateSessionId() {
+  return 'sess_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8);
+}
+
+function savePartialTrial(sessionId, mode, trial) {
+  try {
+    const key = `metacog_partial_${sessionId}`;
+    const existing = JSON.parse(localStorage.getItem(key) || JSON.stringify({mode: mode, started: Date.now(), trials: []}));
+    existing.trials.push(trial);
+    localStorage.setItem(key, JSON.stringify(existing));
+  } catch (e) {
+    console.warn('savePartialTrial failed:', e);
+  }
+}
+
+function clearPartialSession(sessionId) {
+  try {
+    localStorage.removeItem(`metacog_partial_${sessionId}`);
+  } catch (e) {}
+}
+
+function listPartialSessions() {
+  const partials = [];
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith('metacog_partial_')) {
+        const data = JSON.parse(localStorage.getItem(k));
+        if (data.trials && data.trials.length > 0) {
+          partials.push({ key: k, sessionId: k.replace('metacog_partial_', ''), ...data });
+        }
+      }
+    }
+  } catch (e) {}
+  return partials;
+}
+
 function formatTimeAgo(timestamp) {
   const seconds = Math.floor((Date.now() - timestamp) / 1000);
   if (seconds < 60) return "à l'instant";

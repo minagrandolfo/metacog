@@ -1,7 +1,7 @@
 const I18N = {
   fr: {
     title: 'Metacog Trainer',
-    intro: 'Un outil pour mesurer et entraîner ta <b>métacognition</b> : ta capacité à savoir quand tu sais et quand tu doutes. Tâche : juger la direction du mouvement de petits points (gauche ou droite) et indiquer ta confiance.',
+    intro: '<p>La <b>métacognition</b>, c\'est ta capacité à savoir quand tu sais et quand tu doutes. Tu l\'utilises tout le temps sans y penser (« je suis sûr », « je crois mais c\'est flou »…), mais beaucoup de gens n\'en ont jamais entendu parler.</p><p>Ici tu vas la <b>vivre en direct</b> sur une tâche visuelle simple, et voir si ton sentiment de certitude colle vraiment à ta performance. Si ça t\'intéresse, tu pourras ensuite <b>t\'entraîner</b> à mieux te calibrer.</p><p style="font-size:13px;color:#666;margin-top:8px">Tâche : juger la direction du mouvement de petits points (gauche ou droite) et indiquer ta confiance.</p>',
     chooseMode: '1. Choisis un mode :',
     btnEvaluate: 'Évaluer',
     btnEvaluateDesc: '~10 min, sans feedback',
@@ -77,7 +77,7 @@ const I18N = {
   },
   en: {
     title: 'Metacog Trainer',
-    intro: 'A tool to measure and train your <b>metacognition</b>: your ability to know when you know and when you doubt. Task: judge the direction of motion of small dots (left or right) and report your confidence.',
+    intro: '<p><b>Metacognition</b> is your ability to know when you know and when you doubt. You use it all the time without thinking about it ("I\'m sure", "I think but I\'m fuzzy"...), but many people have never heard the word.</p><p>Here you\'ll <b>experience it directly</b> on a simple visual task, and see whether your sense of certainty actually matches your performance. If it sparks your interest, you can then <b>train</b> to better calibrate yourself.</p><p style="font-size:13px;color:#666;margin-top:8px">Task: judge the direction of motion of small dots (left or right) and report your confidence.</p>',
     chooseMode: '1. Choose a mode:',
     btnEvaluate: 'Evaluate',
     btnEvaluateDesc: '~10 min, no feedback',

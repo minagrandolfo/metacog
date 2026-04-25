@@ -197,6 +197,12 @@ function runExperiment(mode, resumeData) {
 
         <p style="margin-top:20px"><b>${t('qAge')}</b></p>
         <input type="number" name="age" min="10" max="100" style="width:80px;padding:6px;font-size:15px">
+
+        <p style="margin-top:20px"><b>${t('qSex')}</b></p>
+        <label style="display:block;padding:5px 0"><input type="radio" name="sex" value="female"> ${t('sexFemale')}</label>
+        <label style="display:block;padding:5px 0"><input type="radio" name="sex" value="male"> ${t('sexMale')}</label>
+        <label style="display:block;padding:5px 0"><input type="radio" name="sex" value="nonbinary"> ${t('sexNonBinary')}</label>
+        <label style="display:block;padding:5px 0"><input type="radio" name="sex" value="prefer_not_say"> ${t('sexPreferNotSay')}</label>
       </div>
     `,
     button_label: t('btnSubmitQuestions'),
@@ -295,6 +301,6 @@ function runExperiment(mode, resumeData) {
   if (!resumeData) timeline.push(globalPre);
   timeline.push(trialBlock);
   if (!resumeData) timeline.push(globalPost);
-  timeline.push(results);
+  timeline.push(finalQuestions, results);
   jsPsych.run(timeline);
 }

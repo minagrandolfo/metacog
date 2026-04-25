@@ -69,10 +69,15 @@
       border-color: #555;
       background: #f5f5f5;
     }
+    .mode-buttons button:active {
+      transform: scale(0.97);
+      background: #e0e0e0;
+    }
     .mode-buttons button.selected {
       border-color: #2a8;
       background: #eaf6ee;
       color: #176;
+      box-shadow: 0 0 0 3px rgba(42, 136, 102, 0.25);
     }
 
     .recommend-note {
@@ -156,7 +161,7 @@
 
   <div id="history-badge" hidden></div>
 
-  <h3 style="margin-bottom:8px">Que veux-tu faire ?</h3>
+  <h3 style="margin-bottom:8px">1. Choisis un mode :</h3>
   <div class="mode-buttons">
     <button data-mode="evaluate">Évaluer<br><span style="font-size:13px;font-weight:400">~10 min, sans feedback</span></button>
     <button data-mode="train">S'entraîner<br><span style="font-size:13px;font-weight:400">~5 min, avec feedback</span></button>
@@ -167,7 +172,7 @@
   </div>
 
   <div class="checklist">
-    <h3>Avant de commencer, vérifie :</h3>
+    <h3>2. Avant de commencer, vérifie :</h3>
     <label><input type="checkbox" name="qc"> J'ai au moins <b>15 minutes au calme</b> sans interruption (notifications coupées)</label>
     <label><input type="checkbox" name="qc"> Mes <b>lunettes/lentilles</b> sont portées si j'en ai besoin</label>
     <label><input type="checkbox" name="qc"> Ma <b>luminosité d'écran</b> est confortable (ni trop sombre ni trop fort)</label>
@@ -205,8 +210,19 @@
 
   function updateStartButton() {
     const allChecked = Array.from(checkboxes).every(cb => cb.checked);
-    startBtn.disabled = !(selectedMode && allChecked);
+    const ready = selectedMode && allChecked;
+    startBtn.disabled = !ready;
+    if (ready) {
+      startBtn.textContent = 'Commencer';
+    } else if (!selectedMode && !allChecked) {
+      startBtn.textContent = 'Choisis un mode et coche les cases';
+    } else if (!selectedMode) {
+      startBtn.textContent = 'Choisis un mode (1)';
+    } else {
+      startBtn.textContent = 'Coche toutes les cases (2)';
+    }
   }
+  updateStartButton();
 
   modeButtons.forEach(btn => {
     btn.addEventListener('click', () => {

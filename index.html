@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Metacog Trainer</title>
+  <script src="https://unpkg.com/jspsych@8"></script>
+  <script src="https://unpkg.com/@jspsych/plugin-html-keyboard-response@2"></script>
+  <script src="https://unpkg.com/@jspsych/plugin-html-button-response@2"></script>
+  <script src="https://unpkg.com/@jspsych/plugin-canvas-button-response@2"></script>
+  <script src="https://unpkg.com/@jspsych/plugin-survey-html-form@2"></script>
+  <link rel="stylesheet" href="https://unpkg.com/jspsych@8/css/jspsych.css">
+  <style>
+    body {
+      background-color: rgb(128, 128, 128);
+      color: white;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    #landing {
+      max-width: 620px;
+      margin: 30px auto;
+      background: white;
+      color: #222;
+      padding: 28px 24px;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.25);
+    }
+
+    @media (min-width: 700px) {
+      #landing { margin: 50px auto; padding: 36px 40px; }
+    }
+
+    #landing h1 { margin-top: 0; font-weight: 600; }
+    #landing p { line-height: 1.5; }
+
+    #history-badge {
+      background: #eef6ff;
+      border: 1px solid #aac;
+      color: #224;
+      padding: 10px 14px;
+      border-radius: 6px;
+      margin-bottom: 18px;
+      font-size: 14px;
+    }
+
+    .mode-buttons {
+      display: flex;
+      gap: 12px;
+      margin: 18px 0 8px 0;
+      flex-wrap: wrap;
+    }
+    .mode-buttons button {
+      flex: 1 1 200px;
+      min-height: 64px;
+      padding: 14px 12px;
+      font-size: 16px;
+      font-weight: 500;
+      border: 2px solid #bbb;
+      background: white;
+      color: #333;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .mode-buttons button:hover {
+      border-color: #555;
+      background: #f5f5f5;
+    }
+    .mode-buttons button.selected {
+      border-color: #2a8;
+      background: #eaf6ee;
+      color: #176;
+    }
+
+    .recommend-note {
+      background: #f6f8fa;
+      border-left: 3px solid #888;
+      padding: 10px 14px;
+      margin: 14px 0 22px 0;
+      font-size: 14px;
+      color: #555;
+    }
+
+    .checklist {
+      margin: 24px 0 16px 0;
+      border-top: 1px solid #eee;
+      padding-top: 16px;
+    }
+    .checklist h3 { margin: 0 0 10px 0; font-size: 16px; color: #444; }
+    .checklist label {
+      display: block;
+      padding: 8px 0;
+      cursor: pointer;
+      font-size: 15px;
+    }
+    .checklist input { margin-right: 10px; transform: scale(1.3); vertical-align: middle; }
+
+    .quality-note {
+      font-size: 13px;
+      color: #777;
+      font-style: italic;
+      margin-top: 10px;
+    }
+
+    #start-btn {
+      display: block;
+      width: 100%;
+      padding: 16px;
+      font-size: 17px;
+      font-weight: 600;
+      background: #2a8;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 22px;
+    }
+    #start-btn:hover:not(:disabled) { background: #197; }
+    #start-btn:disabled {
+      background: #c0c0c0;
+      cursor: not-allowed;
+    }
+
+    .disclaimer {
+      font-size: 12px;
+      color: #999;
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .jspsych-display-element {
+      background-color: rgb(128, 128, 128);
+      color: white;
+    }
+    .jspsych-content { max-width: 800px; }
+    h2 { color: white; }
+
+    .jspsych-btn {
+      padding: 12px 20px;
+      font-size: 16px;
+      margin: 6px;
+      min-height: 48px;
+      min-width: 100px;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+
+<div id="landing">
+  <h1>Metacog Trainer</h1>
+  <p>Un outil pour mesurer et entraîner ta <b>métacognition</b> : ta capacité à savoir quand tu sais et quand tu doutes. Tâche : juger l'inclinaison de petites taches rayées (Gabors) et indiquer ta confiance.</p>
+
+  <div id="history-badge" hidden></div>
+
+  <h3 style="margin-bottom:8px">Que veux-tu faire ?</h3>
+  <div class="mode-buttons">
+    <button data-mode="evaluate">Évaluer<br><span style="font-size:13px;font-weight:400">~10 min, sans feedback</span></button>
+    <button data-mode="train">S'entraîner<br><span style="font-size:13px;font-weight:400">~5 min, avec feedback</span></button>
+  </div>
+
+  <div class="recommend-note">
+    On recommande d'<b>évaluer une fois</b> pour avoir un baseline, puis de <b>t'entraîner</b>, puis de <b>ré-évaluer</b> pour voir si ton score a bougé.
+  </div>
+
+  <div class="checklist">
+    <h3>Avant de commencer, vérifie :</h3>
+    <label><input type="checkbox" name="qc"> J'ai au moins <b>15 minutes au calme</b> sans interruption (notifications coupées)</label>
+    <label><input type="checkbox" name="qc"> Mes <b>lunettes/lentilles</b> sont portées si j'en ai besoin</label>
+    <label><input type="checkbox" name="qc"> Ma <b>luminosité d'écran</b> est confortable (ni trop sombre ni trop fort)</label>
+    <label><input type="checkbox" name="qc"> J'ai compris : je touche/clique <b>"Gauche"</b> ou <b>"Droite"</b> selon l'inclinaison</label>
+    <p class="quality-note">Évite si tu es très fatigué·e ou distrait·e, ça affecte la sensibilité métacog mesurée.</p>
+  </div>
+
+  <button id="start-btn" disabled>Commencer</button>
+
+  <p class="disclaimer">Outil expérimental, pas un diagnostic médical. Données anonymisées utilisées à des fins de recherche.</p>
+</div>
+
+<script src="js/gabor.js"></script>
+<script src="js/staircase.js"></script>
+<script src="js/metacog.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/sheets.js"></script>
+<script src="js/experiment.js"></script>
+<script>
+(function() {
+  const startBtn = document.getElementById('start-btn');
+  const modeButtons = document.querySelectorAll('.mode-buttons button');
+  const checkboxes = document.querySelectorAll('.checklist input[type="checkbox"]');
+  let selectedMode = null;
+
+  const last = lastSession();
+  if (last) {
+    const badge = document.getElementById('history-badge');
+    badge.hidden = false;
+    const modeLabel = last.mode === 'evaluate' ? 'évaluation' : 'entraînement';
+    const accStr = last.accuracy != null ? ` — accuracy ${(last.accuracy*100).toFixed(0)}%` : '';
+    const brierStr = last.brier != null ? ` — Brier ${last.brier.toFixed(3)}` : '';
+    badge.innerHTML = `<b>Dernière session :</b> ${modeLabel} ${formatTimeAgo(last.timestamp)}${accStr}${brierStr}`;
+  }
+
+  function updateStartButton() {
+    const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+    startBtn.disabled = !(selectedMode && allChecked);
+  }
+
+  modeButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      modeButtons.forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedMode = btn.dataset.mode;
+      updateStartButton();
+    });
+  });
+
+  checkboxes.forEach(cb => cb.addEventListener('change', updateStartButton));
+
+  startBtn.addEventListener('click', () => {
+    document.getElementById('landing').hidden = true;
+    runExperiment(selectedMode);
+  });
+})();
+</script>
+
+</body>
+</html>

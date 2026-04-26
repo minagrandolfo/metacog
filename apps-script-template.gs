@@ -8,85 +8,112 @@
 
 const SHEET_ID = 'PASTE_YOUR_SHEET_ID_HERE';
 
-// HEADERS (à mettre en ligne 1 du Sheet, 19 colonnes) :
+// Onglet principal "Data" (ou Feuille1) HEADERS (19 colonnes) :
 // timestamp | session_id | mode | trial_n | direction | coherence | staircase_level | response | correct | rt | confidence | conf_rt | global_pre | global_post | sleep_hours | ld_freq | age | sex | user_code
+//
+// Un onglet "Feedback" sera créé automatiquement à la première soumission de feedback
+// HEADERS Feedback : timestamp | user_code | email | message
 
 function doPost(e) {
   try {
-    const sheet = SpreadsheetApp.openById(SHEET_ID).getActiveSheet();
     const payload = JSON.parse(e.postData.contents);
-    const sessionId = Utilities.getUuid();
-    const ts = new Date(payload.timestamp);
-    const userCode = payload.user_code || '';
 
-    const q = payload.data.find(t => t.task === 'questionnaire');
-    const sleep = q && q.response ? q.response.sleep_hours : '';
-    const ld = q && q.response ? q.response.ld_freq : '';
-    const age = q && q.response ? q.response.age : '';
-    const sex = q && q.response ? q.response.sex : '';
-
-    const pre = payload.data.find(t => t.task === 'global_pre');
-    const post = payload.data.find(t => t.task === 'global_post');
-    const globalPre = pre && pre.response ? pre.response.prediction : '';
-    const globalPost = post && post.response ? post.response.prediction : '';
-
-    const stims = payload.data.filter(t => t.task === 'stim');
-    const confs = payload.data.filter(t => t.task === 'confidence');
-
-    for (let i = 0; i < stims.length; i++) {
-      const s = stims[i];
-      const c = confs[i] || {};
-      sheet.appendRow([
-        ts,
-        sessionId,
-        s.mode,
-        i + 1,
-        s.direction,
-        s.coherence,
-        s.staircase_level,
-        s.response,
-        s.correct,
-        s.rt,
-        c.confidence,
-        c.rt,
-        globalPre,
-        globalPost,
-        sleep,
-        ld,
-        age,
-        sex,
-        userCode
-      ]);
+    if (payload.type === 'feedback') {
+      return handleFeedback(payload);
     }
+    return handleSession(payload);
 
-    return ContentService.createTextOutput(JSON.stringify({status: 'ok', n: stims.length}))
-      .setMimeType(ContentService.MimeType.JSON);
   } catch (err) {
-    return ContentService.createTextOutput(JSON.stringify({status: 'error', message: err.toString()}))
-      .setMimeType(ContentService.MimeType.JSON);
+    return jsonResponse({ status: 'error', message: err.toString() });
   }
 }
 
+function handleSession(payload) {
+  const sheet = SpreadsheetApp.openById(SHEET_ID).getActiveSheet();
+  const sessionId = Utilities.getUuid();
+  const ts = new Date(payload.timestamp);
+  const userCode = payload.user_code || '';
+
+  const q = payload.data.find(t => t.task === 'questionnaire');
+  const sleep = q && q.response ? q.response.sleep_hours : '';
+  const ld = q && q.response ? q.response.ld_freq : '';
+  const age = q && q.response ? q.response.age : '';
+  const sex = q && q.response ? q.response.sex : '';
+
+  const pre = payload.data.find(t => t.task === 'global_pre');
+  const post = payload.data.find(t => t.task === 'global_post');
+  const globalPre = pre && pre.response ? pre.response.prediction : '';
+  const globalPost = post && post.response ? post.response.prediction : '';
+
+  const stims = payload.data.filter(t => t.task === 'stim');
+  const confs = payload.data.filter(t => t.task === 'confidence');
+
+  for (let i = 0; i < stims.length; i++) {
+    const s = stims[i];
+    const c = confs[i] || {};
+    sheet.appendRow([
+      ts,
+      sessionId,
+      s.mode,
+      i + 1,
+      s.direction,
+      s.coherence,
+      s.staircase_level,
+      s.response,
+      s.correct,
+      s.rt,
+      c.confidence,
+      c.rt,
+      globalPre,
+      globalPost,
+      sleep,
+      ld,
+      age,
+      sex,
+      userCode
+    ]);
+  }
+
+  return jsonResponse({ status: 'ok', n: stims.length });
+}
+
+function handleFeedback(payload) {
+  const ss = SpreadsheetApp.openById(SHEET_ID);
+  let sheet = ss.getSheetByName('Feedback');
+  if (!sheet) {
+    sheet = ss.insertSheet('Feedback');
+    sheet.appendRow(['timestamp', 'user_code', 'email', 'message']);
+  }
+  sheet.appendRow([
+    new Date(payload.timestamp || Date.now()),
+    String(payload.user_code || ''),
+    String(payload.email || ''),
+    String(payload.message || '')
+  ]);
+  return jsonResponse({ status: 'ok', type: 'feedback' });
+}
+
+function jsonResponse(obj) {
+  return ContentService.createTextOutput(JSON.stringify(obj))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
 // doGet : retourne les sessions associées à un user_code
-// Appelé depuis le browser via fetch GET avec ?user_code=XXX
 function doGet(e) {
   try {
     const userCode = (e.parameter.user_code || '').toUpperCase();
     if (!userCode) {
-      return ContentService.createTextOutput(JSON.stringify({status: 'error', message: 'no user_code'}))
-        .setMimeType(ContentService.MimeType.JSON);
+      return jsonResponse({ status: 'error', message: 'no user_code' });
     }
     const sheet = SpreadsheetApp.openById(SHEET_ID).getActiveSheet();
     const data = sheet.getDataRange().getValues();
     if (data.length < 2) {
-      return ContentService.createTextOutput(JSON.stringify({status: 'ok', sessions: []}))
-        .setMimeType(ContentService.MimeType.JSON);
+      return jsonResponse({ status: 'ok', sessions: [] });
     }
     const headers = data[0];
     const idx = (name) => headers.indexOf(name);
     if (idx('user_code') === -1) {
-      return ContentService.createTextOutput(JSON.stringify({status: 'error', message: 'user_code column missing in sheet header'}))
-        .setMimeType(ContentService.MimeType.JSON);
+      return jsonResponse({ status: 'error', message: 'user_code column missing in sheet header' });
     }
     const grouped = {};
     for (let i = 1; i < data.length; i++) {
@@ -135,10 +162,8 @@ function doGet(e) {
         auroc2: auc
       };
     }).sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-    return ContentService.createTextOutput(JSON.stringify({status: 'ok', sessions: list}))
-      .setMimeType(ContentService.MimeType.JSON);
+    return jsonResponse({ status: 'ok', sessions: list });
   } catch (err) {
-    return ContentService.createTextOutput(JSON.stringify({status: 'error', message: err.toString()}))
-      .setMimeType(ContentService.MimeType.JSON);
+    return jsonResponse({ status: 'error', message: err.toString() });
   }
 }

@@ -3,16 +3,46 @@ const SHEETS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbxU6PpY9wMYKaC8
 function sendToSheet(allData, userCode) {
   if (!SHEETS_ENDPOINT) {
     console.log('[Sheets] No endpoint configured, skipping push.');
-    return;
+    return Promise.resolve({ status: 'no-endpoint' });
   }
-  fetch(SHEETS_ENDPOINT, {
+  return fetch(SHEETS_ENDPOINT, {
     method: 'POST',
-    mode: 'no-cors',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ data: allData, timestamp: Date.now(), user_code: userCode || '' })
   })
-    .then(() => console.log('[Sheets] Sent.'))
-    .catch(e => console.warn('[Sheets] Failed:', e));
+    .then(r => r.json())
+    .then(j => {
+      console.log('[Sheets] Response:', j);
+      return j;
+    })
+    .catch(e => {
+      console.error('[Sheets] Failed:', e);
+      return { status: 'error', message: e.message };
+    });
+}
+
+function sendFeedback(message, email, userCode) {
+  if (!SHEETS_ENDPOINT) {
+    return Promise.resolve({ status: 'no-endpoint' });
+  }
+  return fetch(SHEETS_ENDPOINT, {
+    method: 'POST',
+    body: JSON.stringify({
+      type: 'feedback',
+      message: String(message || ''),
+      email: String(email || ''),
+      user_code: userCode || '',
+      timestamp: Date.now()
+    })
+  })
+    .then(r => r.json())
+    .then(j => {
+      console.log('[Feedback] Response:', j);
+      return j;
+    })
+    .catch(e => {
+      console.error('[Feedback] Failed:', e);
+      return { status: 'error', message: e.message };
+    });
 }
 
 async function fetchUserHistory(userCode) {

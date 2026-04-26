@@ -139,7 +139,18 @@ const I18N = {
     finalDisclaimer: 'Outil expérimental, à but pédagogique.',
     btnFinish: 'Terminer',
     svgXLabel: 'Niveau de confiance',
-    svgYLabel: 'Accuracy réelle'
+    svgYLabel: 'Accuracy réelle',
+    feedbackTitle: 'Une question, une remarque, un bug ?',
+    feedbackToggleOpen: 'Écrire un retour',
+    feedbackToggleClose: 'Fermer',
+    feedbackPlaceholder: 'Écris ton message ici...',
+    feedbackEmailPlaceholder: 'Ton email (optionnel, si tu veux une réponse)',
+    feedbackEmailNote: 'L\'email est optionnel. Sans email, ton retour reste anonyme.',
+    btnSendFeedback: 'Envoyer',
+    feedbackSending: 'Envoi...',
+    feedbackSent: 'Merci ! Ton retour a bien été envoyé.',
+    feedbackError: 'Échec de l\'envoi. Vérifie ta connexion et réessaie.',
+    feedbackEmpty: 'Écris au moins un message avant d\'envoyer.'
   },
   en: {
     title: 'Metacog Trainer',
@@ -281,7 +292,18 @@ const I18N = {
     finalDisclaimer: 'Experimental tool, for educational purposes.',
     btnFinish: 'Finish',
     svgXLabel: 'Reported confidence',
-    svgYLabel: 'Actual accuracy'
+    svgYLabel: 'Actual accuracy',
+    feedbackTitle: 'A question, a remark, a bug?',
+    feedbackToggleOpen: 'Send feedback',
+    feedbackToggleClose: 'Close',
+    feedbackPlaceholder: 'Write your message here...',
+    feedbackEmailPlaceholder: 'Your email (optional, if you want a reply)',
+    feedbackEmailNote: 'Email is optional. Without an email, your feedback stays anonymous.',
+    btnSendFeedback: 'Send',
+    feedbackSending: 'Sending...',
+    feedbackSent: 'Thanks! Your feedback was received.',
+    feedbackError: 'Send failed. Check your connection and try again.',
+    feedbackEmpty: 'Write at least a message before sending.'
   },
   it: {
     title: 'Metacog Trainer',
@@ -423,7 +445,18 @@ const I18N = {
     finalDisclaimer: 'Strumento sperimentale, a scopo educativo.',
     btnFinish: 'Termina',
     svgXLabel: 'Livello di fiducia',
-    svgYLabel: 'Precisione reale'
+    svgYLabel: 'Precisione reale',
+    feedbackTitle: 'Una domanda, un\'osservazione, un bug ?',
+    feedbackToggleOpen: 'Scrivi un riscontro',
+    feedbackToggleClose: 'Chiudi',
+    feedbackPlaceholder: 'Scrivi qui il tuo messaggio...',
+    feedbackEmailPlaceholder: 'La tua email (opzionale, se vuoi una risposta)',
+    feedbackEmailNote: 'L\'email è opzionale. Senza email, il tuo riscontro resta anonimo.',
+    btnSendFeedback: 'Invia',
+    feedbackSending: 'Invio...',
+    feedbackSent: 'Grazie ! Il tuo riscontro è stato ricevuto.',
+    feedbackError: 'Invio fallito. Controlla la connessione e riprova.',
+    feedbackEmpty: 'Scrivi almeno un messaggio prima di inviare.'
   }
 };
 

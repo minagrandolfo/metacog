@@ -23,7 +23,7 @@ let currentRDK = null;
 function runExperiment(mode, resumeData) {
   const jsPsych = initJsPsych({});
 
-  const TOTAL_TRIALS = 2;
+  const TOTAL_TRIALS = mode === 'evaluate' ? 60 : 30;
   const sessionId = resumeData ? resumeData.sessionId : generateSessionId();
   const resumedTrials = resumeData ? resumeData.trials : [];
   const remainingTrials = TOTAL_TRIALS - resumedTrials.length;

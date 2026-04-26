@@ -310,7 +310,77 @@
       cursor: pointer;
       font-weight: 500;
     }
-  </style>
+
+    .feedback-section {
+      margin-top: 22px;
+      padding-top: 16px;
+      border-top: 1px solid #eee;
+    }
+    .feedback-section h3 { margin: 0 0 8px 0; font-size: 14px; color: #555; font-weight: 600; }
+    .feedback-toggle-btn {
+      padding: 8px 14px;
+      font-size: 13px;
+      background: white;
+      border: 1px solid #aaa;
+      border-radius: 5px;
+      cursor: pointer;
+      color: #444;
+    }
+    .feedback-toggle-btn:hover { background: #f5f5f5; border-color: #555; }
+    .feedback-form {
+      margin-top: 12px;
+      background: #f9fafb;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 14px;
+    }
+    .feedback-form textarea {
+      width: 100%;
+      min-height: 90px;
+      padding: 8px 10px;
+      font-size: 14px;
+      font-family: inherit;
+      border: 1px solid #bbb;
+      border-radius: 4px;
+      box-sizing: border-box;
+      resize: vertical;
+    }
+    .feedback-form input[type="email"] {
+      width: 100%;
+      padding: 8px 10px;
+      font-size: 14px;
+      border: 1px solid #bbb;
+      border-radius: 4px;
+      box-sizing: border-box;
+      margin-top: 8px;
+    }
+    .feedback-form .email-note {
+      font-size: 12px;
+      color: #777;
+      margin: 4px 0 10px 0;
+      line-height: 1.4;
+    }
+    .feedback-form .send-btn {
+      padding: 9px 18px;
+      font-size: 14px;
+      background: #2a8;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: 500;
+    }
+    .feedback-form .send-btn:hover:not(:disabled) { background: #197; }
+    .feedback-form .send-btn:disabled { background: #c0c0c0; cursor: not-allowed; }
+    .feedback-status {
+      margin-top: 10px;
+      font-size: 13px;
+      min-height: 18px;
+    }
+    .feedback-status.ok { color: #197; font-weight: 500; }
+    .feedback-status.err { color: #c33; }
+    .feedback-status.info { color: #555; font-style: italic; }
+</style>
 </head>
 <body>
 
@@ -416,6 +486,19 @@ function renderLanding() {
     <div style="background:#eaf6ee;border:1px solid #2a8;color:#176;padding:10px 14px;border-radius:6px;margin:8px 0 0 0;font-size:13px;line-height:1.5">${t('privacyNote')}</div>
     <button id="start-btn" disabled></button>
     <p class="disclaimer">${t('disclaimer')}</p>
+
+    <div class="feedback-section">
+      <h3>${t('feedbackTitle')}</h3>
+      <button class="feedback-toggle-btn" id="feedback-toggle">${t('feedbackToggleOpen')}</button>
+      <div class="feedback-form" id="feedback-form" hidden>
+        <textarea id="feedback-message" placeholder="${t('feedbackPlaceholder')}"></textarea>
+        <input type="email" id="feedback-email" placeholder="${t('feedbackEmailPlaceholder')}">
+        <p class="email-note">${t('feedbackEmailNote')}</p>
+        <button class="send-btn" id="feedback-send">${t('btnSendFeedback')}</button>
+        <div class="feedback-status" id="feedback-status"></div>
+      </div>
+    </div>
+
     <p class="about-footer">${t('aboutFooter')}</p>
   `;
 
@@ -506,6 +589,46 @@ function attachLandingListeners() {
   const historyBtn = root.querySelector('#history-btn');
   if (historyBtn) {
     historyBtn.addEventListener('click', () => openHistoryModal());
+  }
+
+  const fbToggle = root.querySelector('#feedback-toggle');
+  const fbForm = root.querySelector('#feedback-form');
+  if (fbToggle && fbForm) {
+    fbToggle.addEventListener('click', () => {
+      const isOpen = !fbForm.hidden;
+      fbForm.hidden = isOpen;
+      fbToggle.textContent = isOpen ? t('feedbackToggleOpen') : t('feedbackToggleClose');
+    });
+  }
+
+  const fbSend = root.querySelector('#feedback-send');
+  if (fbSend) {
+    fbSend.addEventListener('click', async () => {
+      const msgEl = root.querySelector('#feedback-message');
+      const emailEl = root.querySelector('#feedback-email');
+      const statusEl = root.querySelector('#feedback-status');
+      const message = (msgEl.value || '').trim();
+      const email = (emailEl.value || '').trim();
+      if (!message) {
+        statusEl.className = 'feedback-status err';
+        statusEl.textContent = t('feedbackEmpty');
+        return;
+      }
+      fbSend.disabled = true;
+      statusEl.className = 'feedback-status info';
+      statusEl.textContent = t('feedbackSending');
+      const result = await sendFeedback(message, email, getUserCode());
+      if (result && result.status === 'ok') {
+        statusEl.className = 'feedback-status ok';
+        statusEl.textContent = t('feedbackSent');
+        msgEl.value = '';
+        emailEl.value = '';
+      } else {
+        statusEl.className = 'feedback-status err';
+        statusEl.textContent = t('feedbackError');
+      }
+      fbSend.disabled = false;
+    });
   }
 
   updateStartButton();

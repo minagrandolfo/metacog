@@ -411,11 +411,47 @@ function runExperiment(mode, resumeData) {
       if (someMetricNullCache && !haveExtended && data.response === 1) {
         wantExtension = true;
       } else {
-        sendToSheet(jsPsych.data.get().values(), getUserCode(), sessionId, sessionNumber);
+        sendToSheet(jsPsych.data.get().values(), getUserCode(), sessionId, sessionNumber, buildMetricsSummary());
         clearPartialSession(sessionId);
       }
     }
   };
+
+  function buildMetricsSummary() {
+    const allData = jsPsych.data.get().values();
+    const newPaired = pairTrialsWithConfidence(allData);
+    const allPaired = [...resumedTrials, ...newPaired];
+    const correctN = allPaired.filter(tr => tr.correct).length;
+    const total = allPaired.length;
+    const acc = total > 0 ? correctN / total : null;
+    const br = brierScore(allPaired);
+    const auc = aurocType2WithCI(allPaired, 200);
+    const meta = metaDPrimeWithCI(allPaired, 200);
+    const preData = jsPsych.data.get().filter({task: 'global_pre'}).values()[0];
+    const postData = jsPsych.data.get().filter({task: 'global_post'}).values()[0];
+    const qData = jsPsych.data.get().filter({task: 'questionnaire'}).values()[0];
+    return {
+      mode: mode,
+      n_trials: total,
+      accuracy: acc,
+      brier: br,
+      auroc2: auc ? auc.point : null,
+      auroc2_ci_lo: auc ? auc.ci_lo : null,
+      auroc2_ci_hi: auc ? auc.ci_hi : null,
+      dprime: meta ? meta.dPrime : null,
+      metaD: meta ? meta.metaD : null,
+      mRatio: meta ? meta.mRatio : null,
+      mRatio_ci_lo: meta ? meta.mRatio_ci_lo : null,
+      mRatio_ci_hi: meta ? meta.mRatio_ci_hi : null,
+      staircase_final: staircase.level,
+      global_pre: preData && preData.response ? parseInt(preData.response.prediction) : null,
+      global_post: postData && postData.response ? parseInt(postData.response.prediction) : null,
+      sleep_hours: qData && qData.response ? qData.response.sleep_hours : null,
+      ld_freq: qData && qData.response ? qData.response.ld_freq : null,
+      age: qData && qData.response ? qData.response.age : null,
+      sex: qData && qData.response ? qData.response.sex : null
+    };
+  }
 
   const earlySend = {
     type: jsPsychHtmlKeyboardResponse,
@@ -425,7 +461,7 @@ function runExperiment(mode, resumeData) {
     on_finish: function() {
       if (!earlySent) {
         earlySent = true;
-        sendToSheet(jsPsych.data.get().values(), getUserCode(), sessionId, sessionNumber);
+        sendToSheet(jsPsych.data.get().values(), getUserCode(), sessionId, sessionNumber, buildMetricsSummary());
       }
     }
   };

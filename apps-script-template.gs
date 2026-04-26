@@ -31,11 +31,16 @@ function doPost(e) {
 }
 
 function handleSession(payload) {
-  const sheet = SpreadsheetApp.openById(SHEET_ID).getActiveSheet();
+  const ss = SpreadsheetApp.openById(SHEET_ID);
+  const sheet = ss.getActiveSheet();
   const sessionId = payload.client_session_id || Utilities.getUuid();
   const sessionNumber = payload.session_number || '';
   const ts = new Date(payload.timestamp);
   const userCode = payload.user_code || '';
+
+  if (payload.metrics) {
+    upsertSessionSummary(ss, ts, sessionId, sessionNumber, userCode, payload.metrics);
+  }
 
   const q = payload.data.find(t => t.task === 'questionnaire');
   const sleep = q && q.response ? q.response.sleep_hours : '';
@@ -86,6 +91,36 @@ function handleSession(payload) {
   }
 
   return jsonResponse({ status: 'ok', n: stims.length, session_id: sessionId, session_number: sessionNumber });
+}
+
+const SESSIONS_HEADERS = [
+  'timestamp', 'session_id', 'session_number', 'user_code', 'mode', 'n_trials',
+  'accuracy', 'd_prime', 'meta_d_prime', 'm_ratio', 'm_ratio_ci_lo', 'm_ratio_ci_hi',
+  'auroc2', 'auroc2_ci_lo', 'auroc2_ci_hi', 'brier', 'staircase_final',
+  'global_pre', 'global_post', 'sleep_hours', 'ld_freq', 'age', 'sex'
+];
+
+function upsertSessionSummary(ss, ts, sessionId, sessionNumber, userCode, m) {
+  let sheet = ss.getSheetByName('Sessions');
+  if (!sheet) {
+    sheet = ss.insertSheet('Sessions');
+    sheet.appendRow(SESSIONS_HEADERS);
+  }
+  const lastRow = sheet.getLastRow();
+  if (lastRow >= 2) {
+    const sids = sheet.getRange(2, 2, lastRow - 1, 1).getValues();
+    const toDelete = [];
+    for (let i = 0; i < sids.length; i++) {
+      if (sids[i][0] === sessionId) toDelete.push(i + 2);
+    }
+    for (let i = toDelete.length - 1; i >= 0; i--) sheet.deleteRow(toDelete[i]);
+  }
+  sheet.appendRow([
+    ts, sessionId, sessionNumber, userCode, m.mode || '', m.n_trials || '',
+    m.accuracy, m.dprime, m.metaD, m.mRatio, m.mRatio_ci_lo, m.mRatio_ci_hi,
+    m.auroc2, m.auroc2_ci_lo, m.auroc2_ci_hi, m.brier, m.staircase_final,
+    m.global_pre, m.global_post, m.sleep_hours || '', m.ld_freq || '', m.age || '', m.sex || ''
+  ]);
 }
 
 function deleteRowsBySessionId(sheet, sessionId) {

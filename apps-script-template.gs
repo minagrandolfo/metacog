@@ -8,8 +8,8 @@
 
 const SHEET_ID = 'PASTE_YOUR_SHEET_ID_HERE';
 
-// HEADERS (à mettre en ligne 1 du Sheet) :
-// timestamp | session_id | mode | trial_n | direction | coherence | staircase_level | response | correct | rt | confidence | conf_rt | global_pre | global_post | sleep_hours | ld_freq | age | sex
+// HEADERS (à mettre en ligne 1 du Sheet, 19 colonnes) :
+// timestamp | session_id | mode | trial_n | direction | coherence | staircase_level | response | correct | rt | confidence | conf_rt | global_pre | global_post | sleep_hours | ld_freq | age | sex | user_code
 
 function doPost(e) {
   try {
@@ -17,6 +17,7 @@ function doPost(e) {
     const payload = JSON.parse(e.postData.contents);
     const sessionId = Utilities.getUuid();
     const ts = new Date(payload.timestamp);
+    const userCode = payload.user_code || '';
 
     const q = payload.data.find(t => t.task === 'questionnaire');
     const sleep = q && q.response ? q.response.sleep_hours : '';
@@ -53,11 +54,88 @@ function doPost(e) {
         sleep,
         ld,
         age,
-        sex
+        sex,
+        userCode
       ]);
     }
 
     return ContentService.createTextOutput(JSON.stringify({status: 'ok', n: stims.length}))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({status: 'error', message: err.toString()}))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+// doGet : retourne les sessions associées à un user_code
+// Appelé depuis le browser via fetch GET avec ?user_code=XXX
+function doGet(e) {
+  try {
+    const userCode = (e.parameter.user_code || '').toUpperCase();
+    if (!userCode) {
+      return ContentService.createTextOutput(JSON.stringify({status: 'error', message: 'no user_code'}))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    const sheet = SpreadsheetApp.openById(SHEET_ID).getActiveSheet();
+    const data = sheet.getDataRange().getValues();
+    if (data.length < 2) {
+      return ContentService.createTextOutput(JSON.stringify({status: 'ok', sessions: []}))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    const headers = data[0];
+    const idx = (name) => headers.indexOf(name);
+    if (idx('user_code') === -1) {
+      return ContentService.createTextOutput(JSON.stringify({status: 'error', message: 'user_code column missing in sheet header'}))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    const grouped = {};
+    for (let i = 1; i < data.length; i++) {
+      const row = data[i];
+      if (String(row[idx('user_code')]).toUpperCase() !== userCode) continue;
+      const sid = row[idx('session_id')];
+      if (!grouped[sid]) {
+        grouped[sid] = {
+          session_id: sid,
+          timestamp: row[idx('timestamp')],
+          mode: row[idx('mode')],
+          n_trials: 0,
+          n_correct: 0,
+          conf_correct: [],
+          conf_incorrect: []
+        };
+      }
+      grouped[sid].n_trials++;
+      const isCorrect = row[idx('correct')] === true || String(row[idx('correct')]).toLowerCase() === 'true';
+      const conf = parseInt(row[idx('confidence')]);
+      if (isCorrect) grouped[sid].n_correct++;
+      if (!isNaN(conf)) {
+        if (isCorrect) grouped[sid].conf_correct.push(conf);
+        else grouped[sid].conf_incorrect.push(conf);
+      }
+    }
+    const list = Object.values(grouped).map(s => {
+      const acc = s.n_trials > 0 ? s.n_correct / s.n_trials : null;
+      let auc = null;
+      if (s.conf_correct.length > 0 && s.conf_incorrect.length > 0) {
+        let sum = 0;
+        for (const cc of s.conf_correct) {
+          for (const ci of s.conf_incorrect) {
+            if (cc > ci) sum += 1;
+            else if (cc === ci) sum += 0.5;
+          }
+        }
+        auc = sum / (s.conf_correct.length * s.conf_incorrect.length);
+      }
+      return {
+        session_id: s.session_id,
+        timestamp: s.timestamp,
+        mode: s.mode,
+        n_trials: s.n_trials,
+        accuracy: acc,
+        auroc2: auc
+      };
+    }).sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+    return ContentService.createTextOutput(JSON.stringify({status: 'ok', sessions: list}))
       .setMimeType(ContentService.MimeType.JSON);
   } catch (err) {
     return ContentService.createTextOutput(JSON.stringify({status: 'error', message: err.toString()}))

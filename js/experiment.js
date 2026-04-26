@@ -344,7 +344,7 @@ function runExperiment(mode, resumeData) {
       if (someMetricNullCache && !haveExtended && data.response === 1) {
         wantExtension = true;
       } else {
-        sendToSheet(jsPsych.data.get().values());
+        sendToSheet(jsPsych.data.get().values(), getUserCode());
         clearPartialSession(sessionId);
       }
     }

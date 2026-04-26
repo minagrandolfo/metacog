@@ -1,4 +1,27 @@
 const STORAGE_KEY = 'metacog_history';
+const USER_CODE_KEY = 'metacog_user_code';
+
+function generateUserCode() {
+  const chars = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+  let s = '';
+  for (let i = 0; i < 6; i++) s += chars[Math.floor(Math.random() * chars.length)];
+  return s.slice(0, 3) + '-' + s.slice(3);
+}
+
+function getUserCode() {
+  try {
+    let code = localStorage.getItem(USER_CODE_KEY);
+    if (!code) {
+      code = generateUserCode();
+      localStorage.setItem(USER_CODE_KEY, code);
+    }
+    return code;
+  } catch (e) { return generateUserCode(); }
+}
+
+function setUserCode(code) {
+  try { localStorage.setItem(USER_CODE_KEY, String(code).toUpperCase()); } catch (e) {}
+}
 
 function saveSession(summary) {
   const history = getSessionHistory();
@@ -98,4 +121,46 @@ function formatDateTime(timestamp) {
   const d = new Date(timestamp);
   const pad = n => String(n).padStart(2, '0');
   return `${pad(d.getDate())}/${pad(d.getMonth()+1)} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function sessionEvolutionSVG(sessions, metric) {
+  const valid = sessions.filter(s => s[metric] != null && isFinite(s[metric]));
+  if (valid.length === 0) return '';
+  const width = 400, height = 240;
+  const padL = 55, padR = 20, padT = 20, padB = 40;
+  const plotW = width - padL - padR;
+  const plotH = height - padT - padB;
+  const values = valid.map(s => s[metric]);
+  let yMin = Math.min(...values);
+  let yMax = Math.max(...values);
+  if (metric === 'mRatio') { yMin = Math.min(0, yMin); yMax = Math.max(1.5, yMax); }
+  else if (metric === 'accuracy') { yMin = 0.4; yMax = 1; }
+  if (yMax === yMin) yMax = yMin + 0.1;
+  const yRange = yMax - yMin;
+  let svg = `<svg viewBox="0 0 ${width} ${height}" width="100%" style="max-width:${width}px;background:white;border-radius:8px;display:block;margin:0 auto">`;
+  svg += `<line x1="${padL}" y1="${padT}" x2="${padL}" y2="${padT+plotH}" stroke="#333" stroke-width="1.5"/>`;
+  svg += `<line x1="${padL}" y1="${padT+plotH}" x2="${padL+plotW}" y2="${padT+plotH}" stroke="#333" stroke-width="1.5"/>`;
+  for (let i = 0; i <= 4; i++) {
+    const v = yMin + yRange * i / 4;
+    const y = padT + plotH * (1 - i/4);
+    svg += `<text x="${padL-8}" y="${y+4}" text-anchor="end" font-size="10" fill="#333">${v.toFixed(2)}</text>`;
+    svg += `<line x1="${padL-4}" y1="${y}" x2="${padL}" y2="${y}" stroke="#333"/>`;
+  }
+  if (metric === 'mRatio') {
+    const yOpt = padT + plotH * (1 - (1 - yMin) / yRange);
+    if (yOpt >= padT && yOpt <= padT + plotH) {
+      svg += `<line x1="${padL}" y1="${yOpt}" x2="${padL+plotW}" y2="${yOpt}" stroke="#aaa" stroke-dasharray="4,4"/>`;
+    }
+  }
+  let prev = null;
+  valid.forEach((s, i) => {
+    const x = padL + plotW * (valid.length === 1 ? 0.5 : i / (valid.length - 1));
+    const y = padT + plotH * (1 - (s[metric] - yMin) / yRange);
+    if (prev) svg += `<line x1="${prev.x}" y1="${prev.y}" x2="${x}" y2="${y}" stroke="#2a8" stroke-width="2.5"/>`;
+    svg += `<circle cx="${x}" cy="${y}" r="5" fill="#2a8" stroke="white" stroke-width="2"/>`;
+    svg += `<text x="${x}" y="${padT+plotH+15}" text-anchor="middle" font-size="10" fill="#333">${i+1}</text>`;
+    prev = {x, y};
+  });
+  svg += `</svg>`;
+  return svg;
 }

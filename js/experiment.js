@@ -291,8 +291,25 @@ function runExperiment(mode, resumeData) {
            <b>${t('diagnosticTitle')}</b><br>${diagnostic.map(m => '• ' + m).join('<br>')}
          </div>`;
 
+      const ciWide = meta && isFinite(meta.mRatio_ci_lo) && isFinite(meta.mRatio_ci_hi)
+        && (meta.mRatio_ci_hi - meta.mRatio_ci_lo) > 1.0;
+
+      let nextStepMsg = '';
+      if (someMetricNull) {
+        nextStepMsg = t('nextStepIncomplete');
+      } else if (ciWide) {
+        nextStepMsg = t('nextStepWideCI');
+      }
+
       const extensionBlock = (someMetricNull && !haveExtended)
         ? `<div style="background:#eef6ff;border:1px solid #4a8;color:#222;padding:14px 16px;border-radius:8px;margin:18px auto 0 auto;max-width:560px;font-size:14px;line-height:1.5">${t('extendOffer')}</div>`
+        : '';
+
+      const nextStepBlock = nextStepMsg
+        ? `<div style="background:#eef6ff;border:1px solid #4a8;color:#222;padding:16px 18px;border-radius:8px;margin:18px auto 0 auto;max-width:560px;font-size:14px;line-height:1.55;text-align:center">
+             <p style="margin:0 0 12px 0">${nextStepMsg}</p>
+             <button id="rerun-btn" style="padding:9px 22px;font-size:14px;background:#2a8;color:white;border:none;border-radius:5px;cursor:pointer;font-weight:500">${t('btnRerunSession')}</button>
+           </div>`
         : '';
 
       const contactBlock = `<div style="margin:24px auto 0 auto;max-width:560px">
@@ -338,6 +355,7 @@ function runExperiment(mode, resumeData) {
         ${globalBlock}
         ${tipsBlock}
         ${extensionBlock}
+        ${nextStepBlock}
         ${contactBlock}
         <p style="font-size:12px;color:#ccc;margin-top:20px">${t('finalDisclaimer')}</p>
       `;
@@ -349,6 +367,14 @@ function runExperiment(mode, resumeData) {
       return [t('btnFinish')];
     },
     on_load: function() {
+      const rerunBtn = document.getElementById('rerun-btn');
+      if (rerunBtn) {
+        rerunBtn.addEventListener('click', () => {
+          clearPartialSession(sessionId);
+          window.location.reload();
+        });
+      }
+
       const sendBtn = document.getElementById('results-fb-send');
       if (!sendBtn) return;
       sendBtn.addEventListener('click', async () => {

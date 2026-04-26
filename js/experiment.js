@@ -268,11 +268,9 @@ function runExperiment(mode, resumeData) {
         `;
       }
 
-      const tipsBlock = mode === 'train'
-        ? `<div style="background:#fff8dc;color:#333;padding:14px;border-radius:6px;margin-top:14px;text-align:left;max-width:520px;margin-left:auto;margin-right:auto">
-             <b>${t('diagnosticTitle')}</b><br>${diagnostic.map(m => '• ' + m).join('<br>')}
-           </div>`
-        : '';
+      const tipsBlock = `<div style="background:#fff8dc;color:#333;padding:14px;border-radius:6px;margin-top:14px;text-align:left;max-width:520px;margin-left:auto;margin-right:auto">
+           <b>${t('diagnosticTitle')}</b><br>${diagnostic.map(m => '• ' + m).join('<br>')}
+         </div>`;
 
       return `
         <h2 style="color:white">${t('resultsTitle')}</h2>
@@ -281,19 +279,19 @@ function runExperiment(mode, resumeData) {
             <p style="margin:4px 0"><b>${t('accuracy')}</b> ${(accuracy*100).toFixed(0)}% (${correct}/${total})</p>
             <p style="margin:0 0 14px 0;font-size:12px;color:#666;line-height:1.4">${t('accuracyExplain')}</p>
 
-            <p style="margin:4px 0"><b>${t('dprime')}</b> ${meta ? meta.dPrime.toFixed(2) : 'n/a'}</p>
+            <p style="margin:4px 0"><b>${t('dprime')}</b> ${meta ? meta.dPrime.toFixed(2) : t('notComputable')}</p>
             <p style="margin:0 0 14px 0;font-size:12px;color:#666;line-height:1.4">${t('dprimeExplain')}</p>
 
-            <p style="margin:4px 0"><b>${t('metad')}</b> ${meta ? meta.metaD.toFixed(2) : 'n/a'}</p>
+            <p style="margin:4px 0"><b>${t('metad')}</b> ${meta ? meta.metaD.toFixed(2) : t('notComputable')}</p>
             <p style="margin:0 0 14px 0;font-size:12px;color:#666;line-height:1.4">${t('metadExplain')}</p>
 
-            <p style="margin:4px 0"><b>${t('mratio')}</b> ${meta ? meta.mRatio.toFixed(2) : 'n/a'}${meta && meta.mRatio_ci_lo !== null ? ` <span style="font-size:13px;color:#555">(95% CI: ${meta.mRatio_ci_lo.toFixed(2)}-${meta.mRatio_ci_hi.toFixed(2)})</span>` : ''}</p>
+            <p style="margin:4px 0"><b>${t('mratio')}</b> ${meta ? meta.mRatio.toFixed(2) : t('notComputable')}${meta && meta.mRatio_ci_lo !== null ? ` <span style="font-size:13px;color:#555">(95% CI: ${meta.mRatio_ci_lo.toFixed(2)}-${meta.mRatio_ci_hi.toFixed(2)})</span>` : ''}</p>
             <p style="margin:0 0 14px 0;font-size:12px;color:#666;line-height:1.4">${t('mratioExplain')}</p>
 
-            <p style="margin:4px 0"><b>${t('auroc2')}</b> ${auc.point !== null ? auc.point.toFixed(3) : 'n/a'}${auc.ci_lo !== null ? ` <span style="font-size:13px;color:#555">(95% CI: ${auc.ci_lo.toFixed(3)}-${auc.ci_hi.toFixed(3)})</span>` : ''}</p>
+            <p style="margin:4px 0"><b>${t('auroc2')}</b> ${auc.point !== null ? auc.point.toFixed(3) : t('notComputable')}${auc.ci_lo !== null ? ` <span style="font-size:13px;color:#555">(95% CI: ${auc.ci_lo.toFixed(3)}-${auc.ci_hi.toFixed(3)})</span>` : ''}</p>
             <p style="margin:0 0 14px 0;font-size:12px;color:#666;line-height:1.4">${t('auroc2Explain')}</p>
 
-            <p style="margin:4px 0"><b>${t('brier')}</b> ${brier !== null ? brier.toFixed(3) : 'n/a'}</p>
+            <p style="margin:4px 0"><b>${t('brier')}</b> ${brier !== null ? brier.toFixed(3) : t('notComputable')}</p>
             <p style="margin:0 0 14px 0;font-size:12px;color:#666;line-height:1.4">${t('brierExplain')}</p>
 
             <p style="margin:4px 0"><b>${t('difficultyFinal')}</b> ${staircase.level.toFixed(1)}${t('coherenceUnit')}</p>

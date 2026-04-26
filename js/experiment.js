@@ -25,8 +25,10 @@ function runExperiment(mode, resumeData) {
 
   const TOTAL_TRIALS = mode === 'evaluate' ? 60 : 30;
   const sessionId = resumeData ? resumeData.sessionId : generateSessionId();
+  const sessionNumber = resumeData && resumeData.sessionNumber ? resumeData.sessionNumber : nextSessionNumber();
   const resumedTrials = resumeData ? resumeData.trials : [];
   const remainingTrials = TOTAL_TRIALS - resumedTrials.length;
+  let earlySent = false;
 
   const validResume = resumeData && resumeData.staircase_state && typeof resumeData.staircase_state.level === 'number';
   const staircase = new StaircaseTwoDownOneUp({
@@ -150,7 +152,7 @@ function runExperiment(mode, resumeData) {
           lastDirection: staircase.lastDirection,
           reversalCount: staircase.reversalCount
         };
-        savePartialTrial(sessionId, mode, trialRecord, state, TOTAL_TRIALS);
+        savePartialTrial(sessionId, mode, trialRecord, state, TOTAL_TRIALS, sessionNumber);
       }
     }
   };
@@ -293,10 +295,16 @@ function runExperiment(mode, resumeData) {
         ? `<div style="background:#eef6ff;border:1px solid #4a8;color:#222;padding:14px 16px;border-radius:8px;margin:18px auto 0 auto;max-width:560px;font-size:14px;line-height:1.5">${t('extendOffer')}</div>`
         : '';
 
-      const contactBlock = `<div style="margin-top:24px;text-align:center;font-size:13px;color:#ddd;line-height:1.6">
-           <p style="margin:0 0 6px 0">${t('contactSection')}</p>
-           <a href="mailto:mina.grandolfo@gmail.com?subject=${encodeURIComponent(t('contactSubject'))}" style="display:inline-block;padding:8px 18px;background:white;color:#176;border-radius:6px;text-decoration:none;font-weight:500">${t('contactBtn')}</a>
-           <p style="margin:14px auto 0 auto;max-width:520px;font-size:12px;color:#bbb;font-style:italic">${t('ethicsInProgress')}</p>
+      const contactBlock = `<div style="margin:24px auto 0 auto;max-width:560px">
+           <div style="background:white;color:#222;padding:16px 18px;border-radius:8px">
+             <p style="margin:0 0 10px 0;font-size:14px;font-weight:600">${t('feedbackTitle')}</p>
+             <textarea id="results-fb-msg" placeholder="${t('feedbackPlaceholder')}" style="width:100%;min-height:80px;padding:8px 10px;font-size:14px;font-family:inherit;border:1px solid #bbb;border-radius:4px;box-sizing:border-box;resize:vertical"></textarea>
+             <input type="email" id="results-fb-email" placeholder="${t('feedbackEmailPlaceholder')}" style="width:100%;padding:8px 10px;font-size:14px;border:1px solid #bbb;border-radius:4px;box-sizing:border-box;margin-top:8px">
+             <p style="font-size:12px;color:#777;margin:4px 0 10px 0;line-height:1.4">${t('feedbackEmailNote')}</p>
+             <button id="results-fb-send" style="padding:9px 18px;font-size:14px;background:#2a8;color:white;border:none;border-radius:5px;cursor:pointer;font-weight:500">${t('btnSendFeedback')}</button>
+             <div id="results-fb-status" style="margin-top:8px;font-size:13px;min-height:18px"></div>
+           </div>
+           <p style="margin:14px auto 0 auto;max-width:520px;font-size:12px;color:#bbb;font-style:italic;text-align:center">${t('ethicsInProgress')}</p>
          </div>`;
 
       return `
@@ -340,12 +348,58 @@ function runExperiment(mode, resumeData) {
       }
       return [t('btnFinish')];
     },
+    on_load: function() {
+      const sendBtn = document.getElementById('results-fb-send');
+      if (!sendBtn) return;
+      sendBtn.addEventListener('click', async () => {
+        const msgEl = document.getElementById('results-fb-msg');
+        const emailEl = document.getElementById('results-fb-email');
+        const statusEl = document.getElementById('results-fb-status');
+        const message = (msgEl.value || '').trim();
+        const email = (emailEl.value || '').trim();
+        if (!message) {
+          statusEl.style.color = '#c33';
+          statusEl.textContent = t('feedbackEmpty');
+          return;
+        }
+        sendBtn.disabled = true;
+        statusEl.style.color = '#555';
+        statusEl.style.fontStyle = 'italic';
+        statusEl.textContent = t('feedbackSending');
+        const result = await sendFeedback(message, email, getUserCode());
+        if (result && result.status === 'ok') {
+          statusEl.style.color = '#197';
+          statusEl.style.fontStyle = 'normal';
+          statusEl.textContent = t('feedbackSent');
+          msgEl.value = '';
+          emailEl.value = '';
+        } else {
+          statusEl.style.color = '#c33';
+          statusEl.style.fontStyle = 'normal';
+          statusEl.textContent = t('feedbackError');
+        }
+        sendBtn.disabled = false;
+      });
+    },
     on_finish: function(data) {
       if (someMetricNullCache && !haveExtended && data.response === 1) {
         wantExtension = true;
       } else {
-        sendToSheet(jsPsych.data.get().values(), getUserCode());
+        sendToSheet(jsPsych.data.get().values(), getUserCode(), sessionId, sessionNumber);
         clearPartialSession(sessionId);
+      }
+    }
+  };
+
+  const earlySend = {
+    type: jsPsychHtmlKeyboardResponse,
+    stimulus: '',
+    choices: 'NO_KEYS',
+    trial_duration: 1,
+    on_finish: function() {
+      if (!earlySent) {
+        earlySent = true;
+        sendToSheet(jsPsych.data.get().values(), getUserCode(), sessionId, sessionNumber);
       }
     }
   };
@@ -390,6 +444,6 @@ function runExperiment(mode, resumeData) {
   if (!resumeData) timeline.push(globalPre);
   timeline.push(trialBlock);
   if (!resumeData) timeline.push(globalPost);
-  timeline.push(finalQuestions, recomputeMetricsCache, results, extensionTrialBlock, extensionResults);
+  timeline.push(finalQuestions, earlySend, recomputeMetricsCache, results, extensionTrialBlock, extensionResults);
   jsPsych.run(timeline);
 }

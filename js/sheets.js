@@ -1,13 +1,19 @@
 const SHEETS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbzpC7xt8OYQKvlo0hVGQGvW8ptcZGmpOkxnpZy9UQL4b17yvhcJnvjuJdDV9sM7oB2e/exec';
 
-function sendToSheet(allData, userCode) {
+function sendToSheet(allData, userCode, clientSessionId, sessionNumber) {
   if (!SHEETS_ENDPOINT) {
     console.log('[Sheets] No endpoint configured, skipping push.');
     return Promise.resolve({ status: 'no-endpoint' });
   }
   return fetch(SHEETS_ENDPOINT, {
     method: 'POST',
-    body: JSON.stringify({ data: allData, timestamp: Date.now(), user_code: userCode || '' })
+    body: JSON.stringify({
+      data: allData,
+      timestamp: Date.now(),
+      user_code: userCode || '',
+      client_session_id: clientSessionId || '',
+      session_number: sessionNumber || ''
+    })
   })
     .then(r => r.json())
     .then(j => {

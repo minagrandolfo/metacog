@@ -8,8 +8,10 @@
 
 const SHEET_ID = 'PASTE_YOUR_SHEET_ID_HERE';
 
-// Onglet principal "Data" (ou Feuille1) HEADERS (19 colonnes) :
-// timestamp | session_id | mode | trial_n | direction | coherence | staircase_level | response | correct | rt | confidence | conf_rt | global_pre | global_post | sleep_hours | ld_freq | age | sex | user_code
+// Onglet principal "Data" (ou Feuille1) HEADERS (20 colonnes) :
+// timestamp | session_id | mode | trial_n | direction | coherence | staircase_level | response | correct | rt | confidence | conf_rt | global_pre | global_post | sleep_hours | ld_freq | age | sex | user_code | session_number
+//
+// IMPORTANT : ajoute manuellement la colonne T1 = "session_number" si tu mets à jour un Sheet existant.
 //
 // Un onglet "Feedback" sera créé automatiquement à la première soumission de feedback
 // HEADERS Feedback : timestamp | user_code | email | message
@@ -30,7 +32,8 @@ function doPost(e) {
 
 function handleSession(payload) {
   const sheet = SpreadsheetApp.openById(SHEET_ID).getActiveSheet();
-  const sessionId = Utilities.getUuid();
+  const sessionId = payload.client_session_id || Utilities.getUuid();
+  const sessionNumber = payload.session_number || '';
   const ts = new Date(payload.timestamp);
   const userCode = payload.user_code || '';
 
@@ -48,10 +51,14 @@ function handleSession(payload) {
   const stims = payload.data.filter(t => t.task === 'stim');
   const confs = payload.data.filter(t => t.task === 'confidence');
 
+  // Dedupe: delete existing rows with the same session_id (early-send + final-send pattern)
+  deleteRowsBySessionId(sheet, sessionId);
+
+  const rows = [];
   for (let i = 0; i < stims.length; i++) {
     const s = stims[i];
     const c = confs[i] || {};
-    sheet.appendRow([
+    rows.push([
       ts,
       sessionId,
       s.mode,
@@ -70,11 +77,31 @@ function handleSession(payload) {
       ld,
       age,
       sex,
-      userCode
+      userCode,
+      sessionNumber
     ]);
   }
+  if (rows.length > 0) {
+    sheet.getRange(sheet.getLastRow() + 1, 1, rows.length, rows[0].length).setValues(rows);
+  }
 
-  return jsonResponse({ status: 'ok', n: stims.length });
+  return jsonResponse({ status: 'ok', n: stims.length, session_id: sessionId, session_number: sessionNumber });
+}
+
+function deleteRowsBySessionId(sheet, sessionId) {
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 2) return;
+  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  const sidIdx = headers.indexOf('session_id');
+  if (sidIdx === -1) return;
+  const sids = sheet.getRange(2, sidIdx + 1, lastRow - 1, 1).getValues();
+  const rowsToDelete = [];
+  for (let i = 0; i < sids.length; i++) {
+    if (sids[i][0] === sessionId) rowsToDelete.push(i + 2);
+  }
+  for (let i = rowsToDelete.length - 1; i >= 0; i--) {
+    sheet.deleteRow(rowsToDelete[i]);
+  }
 }
 
 function handleFeedback(payload) {

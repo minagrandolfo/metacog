@@ -51,16 +51,28 @@ function generateSessionId() {
   return 'sess_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8);
 }
 
-function savePartialTrial(sessionId, mode, trial, staircaseState, totalTrials) {
+function nextSessionNumber() {
+  try {
+    const key = 'metacog_session_counter_' + getUserCode();
+    const current = parseInt(localStorage.getItem(key) || '0', 10);
+    const next = (isNaN(current) ? 0 : current) + 1;
+    localStorage.setItem(key, String(next));
+    return next;
+  } catch (e) { return 1; }
+}
+
+function savePartialTrial(sessionId, mode, trial, staircaseState, totalTrials, sessionNumber) {
   try {
     const key = `metacog_partial_${sessionId}`;
     const existing = JSON.parse(localStorage.getItem(key) || JSON.stringify({
       mode: mode,
       started: Date.now(),
       total_trials: totalTrials,
+      session_number: sessionNumber,
       trials: [],
       staircase_state: null
     }));
+    if (sessionNumber && !existing.session_number) existing.session_number = sessionNumber;
     existing.trials.push(trial);
     existing.staircase_state = staircaseState;
     existing.last_update = Date.now();

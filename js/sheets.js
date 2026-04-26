@@ -1,4 +1,4 @@
-const SHEETS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbxU6PpY9wMYKaC8xwbC18st2f5YHt6Df3wH6t0O_2zHgGY6mGCCY29xQ905TvWdH5Ox/exec';
+const SHEETS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbzpC7xt8OYQKvlo0hVGQGvW8ptcZGmpOkxnpZy9UQL4b17yvhcJnvjuJdDV9sM7oB2e/exec';
 
 function sendToSheet(allData, userCode) {
   if (!SHEETS_ENDPOINT) {

@@ -244,15 +244,141 @@ const I18N = {
     btnFinish: 'Finish',
     svgXLabel: 'Reported confidence',
     svgYLabel: 'Actual accuracy'
+  },
+  it: {
+    title: 'Metacog Trainer',
+    intro: '<p>La <b>metacognizione</b> è la tua capacità di sapere quando sai e quando dubiti. La usi continuamente senza pensarci ("sono sicuro", "credo ma non ne sono certo"...), ma molte persone non ne hanno mai sentito parlare.</p><p>Qui la <b>vivrai direttamente</b> in un compito visivo semplice e vedrai se la tua sensazione di certezza corrisponde davvero alla tua prestazione. Se ti interessa, potrai poi <b>allenarti</b> a calibrarti meglio.</p><p style="font-size:13px;color:#666;margin-top:8px">Compito : giudicare la direzione del movimento di piccoli punti (sinistra o destra) e indicare la tua fiducia.</p>',
+    chooseMode: '1. Scegli una modalità :',
+    btnEvaluate: 'Valutare',
+    btnEvaluateDesc: '~10 min, senza feedback',
+    btnTrain: 'Allenarsi',
+    btnTrainDesc: '~5 min, con feedback',
+    recommendNote: 'Si consiglia di <b>valutare una volta</b> per avere una baseline, poi di <b>allenarti</b>, poi di <b>rivalutare</b> per vedere se il tuo punteggio è cambiato.',
+    checklistTitle: '2. Prima di iniziare, verifica :',
+    check1: 'Ho almeno <b>15 minuti tranquilli</b> senza interruzioni (notifiche disattivate)',
+    check2: 'I miei <b>occhiali/lenti</b> sono indossati se ne ho bisogno',
+    check3: 'La <b>luminosità del mio schermo</b> è confortevole (né troppo bassa né troppo alta)',
+    check4: 'Ho capito : rispondo <b>"Sinistra"</b> o <b>"Destra"</b> secondo la direzione maggioritaria dei punti',
+    qualityNote: 'Evita se sei molto stanco/a o distratto/a, influenza la sensibilità metacognitiva misurata.',
+    privacyNote: 'I tuoi dati (risposte, fiducia, previsioni, sonno, frequenza dei sogni lucidi, età, sesso) sono raccolti <b>in modo anonimo</b> (senza nome, senza email) per la ricerca sulla metacognizione. Cliccando Inizia, dai il tuo consenso. Puoi chiudere la scheda in qualsiasi momento.',
+    btnStartReady: 'Inizia',
+    btnStartNothingDone: 'Scegli una modalità e spunta le caselle',
+    btnStartNoMode: 'Scegli una modalità (1)',
+    btnStartNoBoxes: 'Spunta tutte le caselle (2)',
+    disclaimer: 'Strumento sperimentale, non una diagnosi medica. Dati anonimizzati utilizzati a fini di ricerca.',
+    aboutFooter: 'Realizzato da <b>Mina Grandolfo</b>, dottoranda in metacognizione all\'<b>Université Libre de Bruxelles</b> (supervisori : Axel Cleeremans, Peter Simor). Strumento pensato per la divulgazione e l\'esperienza diretta. Codice sorgente aperto su <a href="https://github.com/minagrandolfo/metacog" target="_blank" rel="noopener">GitHub</a>.',
+    lastSession: 'Ultima sessione :',
+    modeEvalLabel: 'valutazione',
+    modeTrainLabel: 'allenamento',
+    accuracyShort: 'precisione',
+    partialTitle: 'Sessioni incomplete',
+    partialItem: '{mode}, {count}/{total} prove, {date}',
+    btnResume: 'Riprendere',
+    btnDelete: 'Eliminare',
+    justNow: 'proprio ora',
+    minutesAgo: '{n} min fa',
+    hoursAgo: '{n} h fa',
+    daysAgo: '{n} giorno{s} fa',
+    globalPreTitle: 'Prima di iniziare',
+    globalPreInstruction: 'Prima del compito, fai un\'intuizione.',
+    globalPreQ: 'Sulle prossime <b>{n} prove</b>, quante pensi di azzeccarne ?',
+    globalPostTitle: 'Prima di vedere il tuo punteggio',
+    globalPostInstruction: 'Ora, prima di scoprire la tua vera prestazione, fai una stima.',
+    globalPostQ: 'Sulle <b>{n} prove</b> appena fatte, quante pensi di averne azzeccate ?',
+    globalSliderSuffix: '/ {n}',
+    btnConfirm: 'Conferma',
+    globalResultsTitle: 'Metacognizione globale',
+    globalPredictedPre: 'Previsto prima del compito :',
+    globalPredictedPost: 'Previsto dopo il compito :',
+    globalActual: 'Punteggio reale :',
+    globalBiasOver: 'Ti <b>sopravvalutavi</b> di {n} prove.',
+    globalBiasUnder: 'Ti <b>sottovalutavi</b> di {n} prove.',
+    globalBiasNone: 'Eri esattamente sul tuo punteggio.',
+    globalUpdating: 'Hai <b>aggiornato</b> la tua stima di {n} prove tra prima e dopo il compito.',
+    globalNoUpdating: 'Non hai modificato la tua stima tra prima e dopo.',
+    titleEvaluate: 'Valutazione',
+    titleTrain: 'Allenamento',
+    introEvaluate: '{n} prove. Nessun feedback durante il compito.',
+    introTrain: '{n} prove. Vedrai la tua calibrazione alla fine.',
+    introResume: 'Ripresa : ti restano {n} prove.',
+    welcomeInstructions: 'Vedi <b>punti in movimento</b>. La maggioranza si muove in una direzione (sinistra o destra), gli altri si muovono a caso. Rispondi secondo la direzione maggioritaria.',
+    welcomeKeys: 'Tastiera : <b>← →</b> per sinistra/destra, <b>1-2-3-4</b> per la fiducia. Su telefono : tocca i pulsanti.',
+    welcomeConfidence: 'Dopo ogni risposta, indica la tua <b>fiducia</b> (4 livelli).',
+    welcomeAdaptive: 'La difficoltà si adatta automaticamente : comincia facile e diventa rapidamente più sottile. Può sembrare impossibile a volte, è normale. Rispondi comunque, anche se tiri a indovinare.',
+    btnStart: 'Inizia',
+    btnLeft: 'Sinistra (←)',
+    btnRight: 'Destra (→)',
+    confidencePrompt: 'Fiducia ? (1-4 sulla tastiera)',
+    conf1: '1 - Tiro a indovinare',
+    conf2: '2 - Poco sicuro',
+    conf3: '3 - Abbastanza sicuro',
+    conf4: '4 - Molto sicuro',
+    questionsTitle: 'Alcune domande rapide',
+    questionsAnonymous: 'Tutto è anonimo.',
+    qSleep: 'Quante ore hai dormito stanotte ?',
+    qSleepUnit: 'ore',
+    qLD: 'Con quale frequenza fai sogni lucidi (in cui sai di sognare) ?',
+    ldNever: 'Mai',
+    ldRare: 'Meno di una volta al mese',
+    ldMonthly: 'Circa 1x al mese',
+    ldWeekly: 'Circa 1x a settimana',
+    ldMulti: 'Più volte a settimana',
+    qAge: 'Età (opzionale) :',
+    qSex: 'Sesso (opzionale) :',
+    sexFemale: 'Donna',
+    sexMale: 'Uomo',
+    sexNonBinary: 'Non-binario',
+    sexPreferNotSay: 'Preferisco non rispondere',
+    btnSubmitQuestions: 'Vedi i miei risultati',
+    resultsTitle: 'I tuoi risultati',
+    notComputable: 'non calcolabile',
+    verdictTitle: 'Cosa dice di te il tuo profilo',
+    verdictOverconfident: '<b>Tendenza alla sopravvalutazione.</b> Quando ti senti "molto sicuro" o "abbastanza sicuro", sbagli più spesso di quanto la tua sensazione suggerisca. Suggerimento : rallenta prima di queste risposte, chiediti se qualcosa potrebbe essere sbagliato.',
+    verdictUnderconfident: '<b>Tendenza alla sottovalutazione.</b> Dubiti quando spesso hai ragione. Suggerimento : fidati di più delle tue intuizioni, soprattutto quando esiti tra "poco sicuro" e "abbastanza sicuro".',
+    verdictCalibrated: '<b>La tua fiducia è ben calibrata.</b> Quando ti senti sicuro, lo sei davvero ; quando dubiti, è giustificato. Senti correttamente la tua sensibilità, è raro e prezioso.',
+    verdictInsufficient: 'Non c\'è abbastanza varianza nelle tue risposte o non abbastanza prove per livello di fiducia per un verdetto globale. Rifai una sessione o usa più livelli di fiducia.',
+    extendOffer: 'Una delle tue metriche non è stata calcolabile (probabilmente per mancanza di variabilità). <b>Vuoi fare 30 prove in più per risultati più precisi ?</b> Circa 3 minuti.',
+    btnExtend30: 'Sì, 30 prove in più',
+    btnFinishNoExtend: 'No, terminare',
+    contactSection: 'Una domanda, un\'osservazione, un riscontro ?',
+    contactBtn: 'Invia un\'email',
+    contactSubject: 'Metacog Trainer - Riscontro',
+    ethicsInProgress: 'Una richiesta etica è in corso per aprire la raccolta dei dati e permettere la creazione di account per seguire i tuoi progressi nel tempo.',
+    accuracy: 'Precisione :',
+    accuracyExplain: 'Percentuale delle tue risposte Sinistra/Destra che erano corrette (corrispondenti alla direzione reale).',
+    dprime: "Sensibilità d' :",
+    dprimeExplain: 'La tua sensibilità <b>percettiva</b> grezza (sinistra/destra) in signal detection theory. d\' = 0 significa caso, d\' = 1 sensibilità media, d\' > 2 molto sensibile.',
+    metad: "meta-d' :",
+    metadExplain: 'L\'equivalente SDT della tua <b>sensibilità metacognitiva</b> : quanto la tua fiducia distingue le risposte corrette da quelle sbagliate, in unità di d\'.',
+    mratio: 'm-ratio :',
+    mratioExplain: '<b>Efficienza metacognitiva</b> = meta-d\' / d\'. Misura quanto utilizzi le informazioni disponibili quando giudichi la tua fiducia. <b>m-ratio = 1 = ottimale</b> (usi tutte le info), m-ratio < 1 = ne perdi, m-ratio > 1 = rumore o pregiudizio. Calcolato tramite trasformazione AUROC→d\' (approssimazione rapida ; per il gold standard, vedere Maniscalco & Lau 2012 MLE o Fleming 2017 HMeta-d).',
+    auroc2: 'AUROC tipo-2 :',
+    auroc2Explain: 'Probabilità che la tua fiducia sia più alta in una prova corretta che in una sbagliata. <b>0.5 = nessuna metacog</b>, <b>1.0 = metacog perfetta</b>. Indipendente dalla prestazione grezza (a differenza di Brier).',
+    brier: 'Punteggio di Brier :',
+    brierExplain: 'Punteggio di calibrazione. <b>0 = perfetto</b>, 0.25 = non meglio del caso. Nota : Brier mescola calibrazione E prestazione (un soggetto preciso ottiene un Brier migliore anche se mal calibrato).',
+    difficultyFinal: 'Coerenza finale :',
+    coherenceUnit: '% coerenti',
+    coherenceExplain: 'Percentuale di punti che si muovevano nella <b>stessa</b> direzione (gli altri si muovevano a caso). Più è basso, meglio hai rilevato il movimento nel rumore.',
+    diagnosticTitle: 'Diagnostica di calibrazione :',
+    calibAligned: 'La tua fiducia dichiarata corrisponde bene alla tua reale prestazione, a tutti i livelli.',
+    overconfidentMsg: 'Quando dici <b>"{label}"</b>, la tua risposta Sinistra/Destra è corretta <b>{acc}%</b> delle volte (atteso ~{exp}%) → sei <b>sopravvalutato</b> a questo livello.',
+    underconfidentMsg: 'Quando dici <b>"{label}"</b>, la tua risposta Sinistra/Destra è corretta <b>{acc}%</b> delle volte (atteso ~{exp}%) → sei <b>sottovalutato</b> a questo livello.',
+    finalDisclaimer: 'Strumento sperimentale, a scopo educativo.',
+    btnFinish: 'Termina',
+    svgXLabel: 'Livello di fiducia',
+    svgYLabel: 'Precisione reale'
   }
 };
 
 let currentLang = (function() {
   try {
     const stored = localStorage.getItem('metacog_lang');
-    if (stored === 'fr' || stored === 'en') return stored;
+    if (stored === 'fr' || stored === 'en' || stored === 'it') return stored;
   } catch (e) {}
-  return navigator.language && navigator.language.toLowerCase().startsWith('fr') ? 'fr' : 'en';
+  const lang = navigator.language ? navigator.language.toLowerCase() : '';
+  if (lang.startsWith('fr')) return 'fr';
+  if (lang.startsWith('it')) return 'it';
+  return 'en';
 })();
 
 function t(key, vars) {
@@ -268,7 +394,7 @@ function t(key, vars) {
 }
 
 function setLang(lang) {
-  if (lang !== 'fr' && lang !== 'en') return;
+  if (lang !== 'fr' && lang !== 'en' && lang !== 'it') return;
   currentLang = lang;
   try { localStorage.setItem('metacog_lang', lang); } catch (e) {}
   if (typeof renderLanding === 'function') renderLanding();

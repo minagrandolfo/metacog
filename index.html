@@ -201,20 +201,23 @@
     #jspsych-html-button-response-btngroup,
     #jspsych-canvas-button-response-btngroup {
       display: flex;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
       justify-content: center;
       gap: 4px;
       max-width: 100%;
+      width: 100%;
     }
 
     @media (max-width: 600px) {
       .jspsych-btn {
-        padding: 10px 10px;
-        font-size: 13px;
+        padding: 10px 4px;
+        font-size: 12px;
         min-width: 0;
-        margin: 3px;
+        margin: 3px 0;
+        flex: 1 1 0;
+        max-width: 120px;
       }
-      .jspsych-content { padding: 0 8px; max-width: 100%; }
+      .jspsych-content { padding: 0 6px; max-width: 100%; }
     }
   </style>
 </head>

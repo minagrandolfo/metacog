@@ -43,6 +43,8 @@ function runExperiment(mode, resumeData) {
 
   let currentTrial = {};
   let lastStimData = null;
+  let haveExtended = false;
+  let wantExtension = false;
 
   const modeTitle = mode === 'evaluate' ? t('titleEvaluate') : t('titleTrain');
   const modeIntro = resumeData
@@ -131,6 +133,7 @@ function runExperiment(mode, resumeData) {
           coherence: lastStimData.coherence,
           correct: lastStimData.correct,
           response: lastStimData.response,
+          correct_response: lastStimData.correct_response,
           rt: lastStimData.rt,
           confidence: data.confidence,
           confidence_rt: data.rt,
@@ -225,6 +228,9 @@ function runExperiment(mode, resumeData) {
       const meta = metaDPrimeWithCI(allPaired, 300);
       const diagnostic = calibrationDiagnostic(bins);
       const curve = calibrationCurveSVG(bins);
+      const verdict = globalCalibrationVerdict(bins);
+      const verdictMsg = t('verdict' + verdict.charAt(0).toUpperCase() + verdict.slice(1));
+      const someMetricNull = (meta === null) || (meta && (meta.mRatio_ci_lo === null || meta.metaD === 0)) || (auc === null) || (auc && auc.point === null);
 
       const preData = jsPsych.data.get().filter({task: 'global_pre'}).values()[0];
       const postData = jsPsych.data.get().filter({task: 'global_post'}).values()[0];
@@ -268,12 +274,28 @@ function runExperiment(mode, resumeData) {
         `;
       }
 
-      const tipsBlock = `<div style="background:#fff8dc;color:#333;padding:14px;border-radius:6px;margin-top:14px;text-align:left;max-width:520px;margin-left:auto;margin-right:auto">
+      const verdictBlock = `<div style="background:#fff8dc;color:#333;padding:18px 20px;border-radius:10px;margin:0 auto 22px auto;text-align:left;max-width:560px;border:2px solid #d4b840;line-height:1.55">
+           <p style="margin:0 0 8px 0;font-size:15px;color:#888;text-transform:uppercase;letter-spacing:0.05em"><b>${t('verdictTitle')}</b></p>
+           <p style="margin:0;font-size:15px">${verdictMsg}</p>
+         </div>`;
+
+      const tipsBlock = `<div style="background:#f4f4f4;color:#333;padding:14px;border-radius:6px;margin-top:14px;text-align:left;max-width:560px;margin-left:auto;margin-right:auto;font-size:13px">
            <b>${t('diagnosticTitle')}</b><br>${diagnostic.map(m => '• ' + m).join('<br>')}
+         </div>`;
+
+      const extensionBlock = (someMetricNull && !haveExtended)
+        ? `<div style="background:#eef6ff;border:1px solid #4a8;color:#222;padding:14px 16px;border-radius:8px;margin:18px auto 0 auto;max-width:560px;font-size:14px;line-height:1.5">${t('extendOffer')}</div>`
+        : '';
+
+      const contactBlock = `<div style="margin-top:24px;text-align:center;font-size:13px;color:#ddd;line-height:1.6">
+           <p style="margin:0 0 6px 0">${t('contactSection')}</p>
+           <a href="mailto:mina.grandolfo@gmail.com?subject=${encodeURIComponent(t('contactSubject'))}" style="display:inline-block;padding:8px 18px;background:white;color:#176;border-radius:6px;text-decoration:none;font-weight:500">${t('contactBtn')}</a>
+           <p style="margin:14px auto 0 auto;max-width:520px;font-size:12px;color:#bbb;font-style:italic">${t('ethicsInProgress')}</p>
          </div>`;
 
       return `
         <h2 style="color:white">${t('resultsTitle')}</h2>
+        ${verdictBlock}
         <div style="display:flex;gap:24px;justify-content:center;align-items:flex-start;flex-wrap:wrap">
           <div style="background:white;color:#222;padding:18px;border-radius:8px;min-width:280px;max-width:380px;text-align:left">
             <p style="margin:4px 0"><b>${t('accuracy')}</b> ${(accuracy*100).toFixed(0)}% (${correct}/${total})</p>
@@ -301,13 +323,60 @@ function runExperiment(mode, resumeData) {
         </div>
         ${globalBlock}
         ${tipsBlock}
+        ${extensionBlock}
+        ${contactBlock}
         <p style="font-size:12px;color:#ccc;margin-top:20px">${t('finalDisclaimer')}</p>
       `;
     },
-    choices: [t('btnFinish')],
+    choices: function() {
+      if (someMetricNullCache && !haveExtended) {
+        return [t('btnFinishNoExtend'), t('btnExtend30')];
+      }
+      return [t('btnFinish')];
+    },
+    on_finish: function(data) {
+      if (someMetricNullCache && !haveExtended && data.response === 1) {
+        wantExtension = true;
+      } else {
+        sendToSheet(jsPsych.data.get().values());
+        clearPartialSession(sessionId);
+      }
+    }
+  };
+
+  let someMetricNullCache = false;
+  const recomputeMetricsCache = {
+    type: jsPsychHtmlKeyboardResponse,
+    stimulus: '',
+    choices: 'NO_KEYS',
+    trial_duration: 1,
     on_finish: function() {
-      sendToSheet(jsPsych.data.get().values());
-      clearPartialSession(sessionId);
+      const allData = jsPsych.data.get().values();
+      const newPaired = pairTrialsWithConfidence(allData);
+      const allPaired = [...resumedTrials, ...newPaired];
+      const meta = metaDPrimeWithCI(allPaired, 100);
+      const auc = aurocType2WithCI(allPaired, 100);
+      someMetricNullCache = (meta === null) || (meta && (meta.mRatio_ci_lo === null || meta.metaD === 0)) || (auc === null) || (auc && auc.point === null);
+    }
+  };
+
+  const extensionTrialBlock = {
+    timeline: [stim, confidence],
+    repetitions: 30,
+    conditional_function: function() {
+      if (wantExtension && !haveExtended) {
+        haveExtended = true;
+        wantExtension = false;
+        return true;
+      }
+      return false;
+    }
+  };
+
+  const extensionResults = {
+    ...results,
+    conditional_function: function() {
+      return haveExtended;
     }
   };
 
@@ -315,6 +384,6 @@ function runExperiment(mode, resumeData) {
   if (!resumeData) timeline.push(globalPre);
   timeline.push(trialBlock);
   if (!resumeData) timeline.push(globalPost);
-  timeline.push(finalQuestions, results);
+  timeline.push(finalQuestions, recomputeMetricsCache, results, extensionTrialBlock, extensionResults);
   jsPsych.run(timeline);
 }

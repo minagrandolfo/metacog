@@ -12,12 +12,29 @@ function pairTrialsWithConfidence(allTrials) {
       coherence: stims[i].coherence,
       correct: stims[i].correct,
       response: stims[i].response,
+      correct_response: stims[i].correct_response,
       rt: stims[i].rt,
       confidence: confs[i].confidence,
       staircase_level: stims[i].staircase_level
     });
   }
   return paired;
+}
+
+function globalCalibrationVerdict(bins) {
+  let countOver = 0, countUnder = 0, countOk = 0;
+  bins.forEach(bin => {
+    if (bin.n < 3 || bin.accuracy === null) return;
+    const diff = bin.accuracy - bin.expected;
+    if (diff < -0.15) countOver++;
+    else if (diff > 0.15) countUnder++;
+    else countOk++;
+  });
+  const total = countOver + countUnder + countOk;
+  if (total < 2) return 'insufficient';
+  if (countOver > countUnder && countOver >= 1) return 'overconfident';
+  if (countUnder > countOver && countUnder >= 1) return 'underconfident';
+  return 'calibrated';
 }
 
 function computeCalibration(trials) {
